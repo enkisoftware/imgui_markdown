@@ -30,7 +30,7 @@ https://github.com/juliettef/Media/blob/master/ImGuiMarkdown_demo_live_editing.g
 #include <string>
 
 // You can make your own Markdown function with your prefered string container and markdown config.
-static ImGui::MarkdownConfig mdConfig{ LinkCallback, { NULL, true, NULL, true, NULL, false }, ICON_FA_LINK };
+static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { NULL, true, NULL, true, NULL, false } };
 
 void LinkCallback( const char* link_, uint32_t linkLength_ )
 {

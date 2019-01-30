@@ -45,7 +45,7 @@ imgui_markdown currently supports the following markdown functionality:
 #include <string>
 
 // You can make your own Markdown function with your prefered string container and markdown config.
-static ImGui::MarkdownConfig mdConfig{ LinkCallback, { NULL, true, NULL, true, NULL, false }, ICON_FA_LINK };
+static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { NULL, true, NULL, true, NULL, false } };
 
 void LinkCallback( const char* link_, uint32_t linkLength_ )
 {
@@ -105,8 +105,9 @@ namespace ImGui
     struct MarkdownConfig
     {
         typedef void MarkdownLinkCallback( const char* link_, uint32_t linkLength_ );
-        static const int NUMHEADINGS = 3;
         struct HeadingFormat{ ImFont* font; bool separator; };
+
+        static const int NUMHEADINGS = 3;
 
         MarkdownLinkCallback* linkCallback = 0;
         const char* linkIcon = "";
