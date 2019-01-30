@@ -13,7 +13,7 @@
 // 
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
-//    in a product, an acknowledgement in the product documentation would be
+//    in a product, an acknowledgment in the product documentation would be
 //    appreciated but is not required.
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
@@ -29,7 +29,7 @@ ImGuiMarkdown currently supports the following markdown functionality:
  - Wrapped text
  - Headers H1, H2, H3
  - Indented text, multi levels
- - Unorderd lists and sub-lists
+ - Unordered lists and sub-lists
  - Links
 
 // Example use on Windows with links opening in a browser
@@ -41,6 +41,7 @@ ImGuiMarkdown currently supports the following markdown functionality:
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include "Shellapi.h"
+#include <string>
 
 void LinkCallback( const char* link_, uint32_t linkLength_ )
 {
@@ -94,21 +95,23 @@ namespace ImGui
 {
     // Configuration struct for RenderMarkdown
     //   * linkCallback is called when a link is clicked on
+    //   * linkIcon is a string which encode a "Link" icon, if available in the current font (e.g. linkIcon = ICON_FA_LINK with FontAwesome+IconFontCppHeaders)
     //   * HeadingFormat controls the format of heading H1 to H3, those above H3 use H3 format
     //     * font is the index into the ImGui font array
-    //     * separator controls wether an underlined seperator is drawn after the header
+    //     * separator controls whether an underlined separator is drawn after the header
     struct MarkdownConfig
     {
         typedef void MarkdownLinkCallback( const char* link_, uint32_t linkLength_ );
         static const int NUMHEADINGS = 3;
-        struct HeadingFormat{ int font; bool separator; };
+        struct HeadingFormat{ ImFont* font; bool separator; };
 
         MarkdownLinkCallback* linkCallback = 0;
-        HeadingFormat headingFormats[ NUMHEADINGS ] = { 0, true, 0, true, 0, true };
+        const char* linkIcon = "";
+        HeadingFormat headingFormats[ NUMHEADINGS ] = { NULL, true, NULL, true, NULL, true };
     };
 
     // External interface
-    inline void RenderMarkdown( const char* markdown_, uint32_t markdownLength_, const MarkdownConfig& mdConfig_ );
+    inline void RenderMarkdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ );
 
     // Internals
     struct TextRegion;
@@ -147,7 +150,7 @@ namespace ImGui
             widthLeft = GetContentRegionAvail().x;
             while( endPrevLine < text_end )
             {
-                const char* text = endPrevLine;
+                text = endPrevLine;
                 if( *text == ' ' ) { ++text; }    // skip a space at start of line
                 endPrevLine = pFont->CalcWordWrapPositionA( scale, text, text_end, widthLeft );
                 ImGui::TextUnformatted( text, endPrevLine );
@@ -250,9 +253,9 @@ namespace ImGui
             }
 
             bool popFontRequired = false;
-            if( ImGui::GetIO().Fonts->Fonts.size() > fmt.font )
+            if( fmt.font && fmt.font != ImGui::GetFont() )
             {
-                ImGui::PushFont( ImGui::GetIO().Fonts->Fonts[fmt.font] );
+                ImGui::PushFont( fmt.font );
                 popFontRequired = true;
             }
             const char* text = markdown_ + textStart + 1;
@@ -282,14 +285,15 @@ namespace ImGui
     }
     
     // render markdown
-    inline void RenderMarkdown( const char* markdown_, uint32_t markdownLength_, const MarkdownConfig& mdConfig_ )
+    inline void RenderMarkdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ )
     {
+        ImGuiStyle& style = ImGui::GetStyle();
         Line line;
         Link link;
         TextRegion textRegion;
 
         char c = 0;
-        for( uint32_t i=0; i < markdownLength_; ++i )
+        for( int i=0; i < (int)markdownLength_; ++i )
         {
             c = markdown_[i];               // get the character at index
             if( c == 0 ) { break; }         // shouldn't happen but don't go beyond 0.
@@ -382,7 +386,7 @@ namespace ImGui
                     // render link
                     link.url.stop = i;
                     ImGui::SameLine( 0.0f, 0.0f );
-                    ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyle().Colors[ ImGuiCol_ButtonHovered ]);
+                    ImGui::PushStyleColor( ImGuiCol_Text, style.Colors[ ImGuiCol_ButtonHovered ]);
                     ImGui::PushTextWrapPos(-1.0f);
                     const char* text = markdown_ + link.text.start ;
                     ImGui::TextUnformatted( text, text + link.text.size() );
@@ -397,16 +401,16 @@ namespace ImGui
                                 mdConfig_.linkCallback( markdown_ + link.url.start, link.url.size() );
                             }
                         }
-                        ImGui::UnderLine( ImGui::GetStyle().Colors[ ImGuiCol_ButtonHovered ] );
-                        ImGui::SetTooltip( ICON_FA_LINK "  Open in browser\n%.*s", link.url.size(), markdown_ + link.url.start );
+                        ImGui::UnderLine( style.Colors[ ImGuiCol_ButtonHovered ] );
+                        ImGui::SetTooltip( "%s Open in browser\n%.*s", mdConfig_.linkIcon, link.url.size(), markdown_ + link.url.start );
                     }
                     else
                     {
-                        ImGui::UnderLine( ImGui::GetStyle().Colors[ ImGuiCol_Button ] );
+                        ImGui::UnderLine( style.Colors[ ImGuiCol_Button ] );
                     }
                     ImGui::SameLine( 0.0f, 0.0f );
                         
-                    // reset the link by reinitialising it
+                    // reset the link by reinitializing it
                     link = Link();
                     line.lastRenderPosition = i;
                 }
@@ -435,7 +439,7 @@ namespace ImGui
         // render any remaining text if last char wasn't 0
         if( markdownLength_ && line.lineStart < (int)markdownLength_ && markdown_[ line.lineStart ] != 0 )
         {
-            line.lineEnd = markdownLength_ - 1;
+            line.lineEnd = (int)markdownLength_ - 1;
             RenderLine( markdown_, line, textRegion, mdConfig_ );
         }
     }
