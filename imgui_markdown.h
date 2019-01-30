@@ -20,12 +20,12 @@
 // 3. This notice may not be removed or altered from any source distribution.
 
 /*
-ImGuiMarkdown https://github.com/juliettef/ImGuiMarkdown
+imgui_markdown https://github.com/juliettef/imgui_markdown
 Markdown for Dear ImGui
 
 A permissively licensed markdown single-header library for https://github.com/ocornut/imgui
 
-ImGuiMarkdown currently supports the following markdown functionality:
+imgui_markdown currently supports the following markdown functionality:
  - Wrapped text
  - Headers H1, H2, H3
  - Indented text, multi levels
@@ -34,14 +34,18 @@ ImGuiMarkdown currently supports the following markdown functionality:
 
 // Example use on Windows with links opening in a browser
 
-#include "ImGui.h"
-#include "ImGuiMarkdown.h"
+#include "ImGui.h"                // https://github.com/ocornut/imgui
+#include "imgui_markdown.h"       // https://github.com/juliettef/imgui_markdown
+#include "IconsFontAwesome5.h"    // https://github.com/juliettef/IconFontCppHeaders
 
 // Following includes for Windows LinkCallback
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include "Shellapi.h"
 #include <string>
+
+// You can make your own Markdown function with your prefered string container and markdown config.
+static ImGui::MarkdownConfig mdConfig{ LinkCallback, { NULL, true, NULL, true, NULL, false }, ICON_FA_LINK };
 
 void LinkCallback( const char* link_, uint32_t linkLength_ )
 {
@@ -53,24 +57,23 @@ void LoadFonts( float fontSize_ = 12.0f )
 {
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->Clear();
-    // Base font, font index = 0
+    // Base font
     io.Fonts->AddFontFromFileTTF( "myfont.ttf", fontSize_ );
-    // Bold headings H2 and H3, font index = 1
-    io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSize_ );
-    // bold heading H1, font index = 2
+    // Bold headings H2 and H3
+    mdConfig.headingFormats[ 1 ].font = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSize_ );
+    mdConfig.headingFormats[ 2 ].font = mdConfig.headingFormats[ 1 ].font;
+    // bold heading H1
     float fontSizeH1 = fontSize_ * 1.1f;
-    io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSizeH1 );
+    mdConfig.headingFormats[ 0 ].font = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSizeH1 );
 }
 
-// You can make your own RenderMarkdown function with your prefered string container and markdown config.
-void RenderMarkdown( const std::string& markdown_ )
+void Markdown( const std::string& markdown_ )
 {
     // fonts for, respectively, headings H1, H2, H3 and beyond
-    ImGui::MarkdownConfig mdConfig{ LinkCallback, { 2, true, 1, true, 1, false } };
-    ImGui::RenderMarkdown( markdown_.c_str(), markdown_.length(), mdConfig );
+    ImGui::Markdown( markdown_.c_str(), markdown_.length(), mdConfig );
 }
 
-void RenderMarkdownExample()
+void MarkdownExample()
 {
     const std::string markdownText = u8R"(
 # H1 Header: Text and Links
@@ -83,7 +86,7 @@ You can add [links like this one to enkisoftware](https://www.enkisoftware.com/)
     * Lists can be indented with two extra spaces.
   * Lists can have [links like this one to Avoyd](https://www.avoyd.com/)
 )";
-    RenderMarkdown( markdownText );
+    Markdown( markdownText );
 }
 
 */
@@ -93,9 +96,9 @@ You can add [links like this one to enkisoftware](https://www.enkisoftware.com/)
 
 namespace ImGui
 {
-    // Configuration struct for RenderMarkdown
+    // Configuration struct for Markdown
     //   * linkCallback is called when a link is clicked on
-    //   * linkIcon is a string which encode a "Link" icon, if available in the current font (e.g. linkIcon = ICON_FA_LINK with FontAwesome+IconFontCppHeaders)
+    //   * linkIcon is a string which encode a "Link" icon, if available in the current font (e.g. linkIcon = ICON_FA_LINK with FontAwesome + IconFontCppHeaders https://github.com/juliettef/IconFontCppHeaders)
     //   * HeadingFormat controls the format of heading H1 to H3, those above H3 use H3 format
     //     * font is the index into the ImGui font array
     //     * separator controls whether an underlined separator is drawn after the header
@@ -111,7 +114,7 @@ namespace ImGui
     };
 
     // External interface
-    inline void RenderMarkdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ );
+    inline void Markdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ );
 
     // Internals
     struct TextRegion;
@@ -285,7 +288,7 @@ namespace ImGui
     }
     
     // render markdown
-    inline void RenderMarkdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ )
+    inline void Markdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ )
     {
         ImGuiStyle& style = ImGui::GetStyle();
         Line line;

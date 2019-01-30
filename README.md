@@ -1,32 +1,36 @@
-# ImGuiMarkdown
+# imgui_markdown
 
 ## Markdown for Dear ImGui
 
 A permissively licensed markdown single-header library for [Dear ImGui](https://github.com/ocornut/imgui).
 
-ImGuiMarkdown currently supports the following markdown functionality:
+imgui_markdown currently supports the following markdown functionality:
 
   * Wrapped text
   * Headers H1, H2, H3
   * Indented text, multi levels
-  * Unorderd lists and sub-lists
+  * Unordered lists and sub-lists
   * Links
 
-![ImGuiMarkdown demo live editing](
+![imgui_markdown demo live editing](
 https://github.com/juliettef/Media/blob/master/ImGuiMarkdown_demo_live_editing.gif)
 
 ## Example use on Windows with links opening in a browser
 
 ```Cpp
 
-#include "ImGui.h"
-#include "ImGuiMarkdown.h"
+#include "ImGui.h"                // https://github.com/ocornut/imgui
+#include "imgui_markdown.h"       // https://github.com/juliettef/imgui_markdown
+#include "IconsFontAwesome5.h"    // https://github.com/juliettef/IconFontCppHeaders
 
 // Following includes for Windows LinkCallback
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include "Shellapi.h"
 #include <string>
+
+// You can make your own Markdown function with your prefered string container and markdown config.
+static ImGui::MarkdownConfig mdConfig{ LinkCallback, { NULL, true, NULL, true, NULL, false }, ICON_FA_LINK };
 
 void LinkCallback( const char* link_, uint32_t linkLength_ )
 {
@@ -38,24 +42,23 @@ void LoadFonts( float fontSize_ = 12.0f )
 {
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->Clear();
-    // Base font, font index = 0
+    // Base font
     io.Fonts->AddFontFromFileTTF( "myfont.ttf", fontSize_ );
-    // Bold headings H2 and H3, font index = 1
-    io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSize_ );
-    // bold heading H1, font index = 2
+    // Bold headings H2 and H3
+    mdConfig.headingFormats[ 1 ].font = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSize_ );
+    mdConfig.headingFormats[ 2 ].font = mdConfig.headingFormats[ 1 ].font;
+    // bold heading H1
     float fontSizeH1 = fontSize_ * 1.1f;
-    io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSizeH1 );
+    mdConfig.headingFormats[ 0 ].font = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSizeH1 );
 }
 
-// You can make your own RenderMarkdown function with your preferred string container and markdown config.
-void RenderMarkdown( const std::string& markdown_ )
+void Markdown( const std::string& markdown_ )
 {
     // fonts for, respectively, headings H1, H2, H3 and beyond
-    ImGui::MarkdownConfig mdConfig{ LinkCallback, { 2, true, 1, true, 1, false } };
-    ImGui::RenderMarkdown( markdown_.c_str(), markdown_.length(), mdConfig );
+    ImGui::Markdown( markdown_.c_str(), markdown_.length(), mdConfig );
 }
 
-void RenderMarkdownExample()
+void MarkdownExample()
 {
     const std::string markdownText = u8R"(
 # H1 Header: Text and Links
@@ -68,16 +71,16 @@ You can add [links like this one to enkisoftware](https://www.enkisoftware.com/)
     * Lists can be indented with two extra spaces.
   * Lists can have [links like this one to Avoyd](https://www.avoyd.com/)
 )";
-    RenderMarkdown( markdownText );
+    Markdown( markdownText );
 }
 ```
 
-![Example use of ImGuiMarkdown with icon fonts](https://github.com/juliettef/Media/blob/master/ImGuiMarkdown_icon_font.jpg)
+![Example use of imgui_markdown with icon fonts](https://github.com/juliettef/Media/blob/master/ImGuiMarkdown_icon_font.jpg)
 
-## Projects using ImGuiMarkdown
+## Projects using imgui_markdown
 
 ### [Avoyd](https://www.avoyd.com)
-Avoyd is an abstract 6 degrees of freedom voxel game. The game and the voxel editor's help and tutorials use ImGuiMarkdown with Dear ImGui.
+Avoyd is an abstract 6 degrees of freedom voxel game. The game and the voxel editor's help and tutorials use imgui_markdown with Dear ImGui.
 
 ## Credits
 
@@ -99,7 +102,7 @@ freely, subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not
    claim that you wrote the original software. If you use this software
-   in a product, an acknowledgement in the product documentation would be
+   in a product, an acknowledgment in the product documentation would be
    appreciated but is not required.
 2. Altered source versions must be plainly marked as such, and must not be
    misrepresented as being the original software.
