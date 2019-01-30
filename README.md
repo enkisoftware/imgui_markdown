@@ -26,6 +26,7 @@ https://github.com/juliettef/Media/blob/master/ImGuiMarkdown_demo_live_editing.g
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include "Shellapi.h"
+#include <string>
 
 void LinkCallback( const char* link_, uint32_t linkLength_ )
 {
@@ -46,7 +47,7 @@ void LoadFonts( float fontSize_ = 12.0f )
     io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSizeH1 );
 }
 
-// You can make your own RenderMarkdown function with your prefered string container and markdown config.
+// You can make your own RenderMarkdown function with your preferred string container and markdown config.
 void RenderMarkdown( const std::string& markdown_ )
 {
     // fonts for, respectively, headings H1, H2, H3 and beyond
