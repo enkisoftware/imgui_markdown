@@ -12,7 +12,7 @@ imgui_markdown currently supports the following markdown functionality:
   * Unordered lists and sub-lists
   * Links
 
-![imgui_markdown demo live editing](https://github.com/juliettef/Media/blob/master/ImGuiMarkdown_demo_live_editing.gif)
+![imgui_markdown demo live editing](https://github.com/juliettef/Media/blob/master/imgui_markdown_demo_live_editing.gif)
 
 ## Syntax
 
@@ -50,7 +50,7 @@ Normal text
 [link description](https://...)
 ```
 
-![Example use of imgui_markdown with icon fonts](https://github.com/juliettef/Media/blob/master/ImGuiMarkdown_icon_font.jpg)
+![Example use of imgui_markdown with icon fonts](https://github.com/juliettef/Media/blob/master/imgui_markdown_icon_font.jpg)
 
 ## Example use on Windows with links opening in a browser
 
@@ -116,6 +116,8 @@ You can add [links like this one to enkisoftware](https://www.enkisoftware.com/)
 
 ### [Avoyd](https://www.avoyd.com)
 Avoyd is an abstract 6 degrees of freedom voxel game. The game and the voxel editor's help and tutorials use imgui_markdown with Dear ImGui.
+
+![imgui_markdown used in Avoyd](https://github.com/juliettef/Media/blob/master/imgui_markdown_icon_font.jpg)
 
 ## Credits
 
