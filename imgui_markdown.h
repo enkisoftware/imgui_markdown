@@ -19,6 +19,7 @@
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
+
 /*
 imgui_markdown https://github.com/juliettef/imgui_markdown
 Markdown for Dear ImGui
@@ -31,6 +32,32 @@ imgui_markdown currently supports the following markdown functionality:
  - Indented text, multi levels
  - Unordered lists and sub-lists
  - Links
+ 
+Syntax
+
+Wrapping: 
+Text wraps automatically. To add a new line, use 'Return'.
+
+Headers:
+# H1
+## H2
+### H3
+
+Indents: 
+On a new line, at the start of the line, add two spaces per indent.
+··Indent level 1
+····Indent level 2
+
+Unordered lists: 
+On a new line, at the start of the line, add two spaces, an asterisks and a space. 
+For nested lists, add two additional spaces in front of the asterisk per list level increment.
+··*·Unordered List level 1
+····*·Unordered List level 2
+
+Links:
+[link description](https://...)
+
+===============================================================================
 
 // Example use on Windows with links opening in a browser
 
@@ -89,6 +116,7 @@ You can add [links like this one to enkisoftware](https://www.enkisoftware.com/)
     Markdown( markdownText );
 }
 
+===============================================================================
 */
 
 

@@ -12,8 +12,45 @@ imgui_markdown currently supports the following markdown functionality:
   * Unordered lists and sub-lists
   * Links
 
-![imgui_markdown demo live editing](
-https://github.com/juliettef/Media/blob/master/ImGuiMarkdown_demo_live_editing.gif)
+![imgui_markdown demo live editing](https://github.com/juliettef/Media/blob/master/ImGuiMarkdown_demo_live_editing.gif)
+
+## Syntax
+
+### Wrapping
+Text wraps automatically. To add a new line, use 'Return'.
+### Headers
+```
+# H1
+## H2
+### H3
+```
+### Lists
+#### Indents
+On a new line, at the start of the line, add two spaces per indent.
+```
+Normal text
+··Indent level 1
+····Indent level 2
+······Indent level 3
+Normal text
+```
+#### Unordered lists
+On a new line, at the start of the line, add two spaces, an asterisks and a space. For nested lists, add two additional spaces in front of the asterisk per list level increment.
+```
+Normal text
+··*·Unordered List level 1
+····*·Unordered List level 2
+······*·Unordered List level 3
+······*·Unordered List level 3
+··*·Unordered List level 1
+Normal text
+```
+### Links
+```
+[link description](https://...)
+```
+
+![Example use of imgui_markdown with icon fonts](https://github.com/juliettef/Media/blob/master/ImGuiMarkdown_icon_font.jpg)
 
 ## Example use on Windows with links opening in a browser
 
@@ -74,8 +111,6 @@ You can add [links like this one to enkisoftware](https://www.enkisoftware.com/)
     Markdown( markdownText );
 }
 ```
-
-![Example use of imgui_markdown with icon fonts](https://github.com/juliettef/Media/blob/master/ImGuiMarkdown_icon_font.jpg)
 
 ## Projects using imgui_markdown
 
