@@ -117,7 +117,7 @@ You can add [links like this one to enkisoftware](https://www.enkisoftware.com/)
 ### [Avoyd](https://www.avoyd.com)
 Avoyd is an abstract 6 degrees of freedom voxel game. The game and the voxel editor's help and tutorials use imgui_markdown with Dear ImGui.
 
-![imgui_markdown used in Avoyd](https://github.com/juliettef/Media/blob/master/imgui_markdown_icon_font.jpg)
+![imgui_markdown used in Avoyd](https://github.com/juliettef/Media/blob/master/imgui_markdown_Avoyd_about_OSS.png)
 
 ## Credits
 
