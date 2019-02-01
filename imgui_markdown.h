@@ -74,9 +74,9 @@ Links:
 // You can make your own Markdown function with your prefered string container and markdown config.
 static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { NULL, true, NULL, true, NULL, false } };
 
-void LinkCallback( const char* link_, uint32_t linkLength_ )
+void LinkCallback( MarkdownLinkCallbackData data_ )
 {
-    std::string url( link_, linkLength_ );
+    std::string url( data_.link, data_.linkLength );
     ShellExecuteA( NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL );
 }
 
@@ -130,16 +130,25 @@ namespace ImGui
     //   * HeadingFormat controls the format of heading H1 to H3, those above H3 use H3 format
     //     * font is the index into the ImGui font array
     //     * separator controls whether an underlined separator is drawn after the header
+
+    struct MarkdownLinkCallbackData
+    {
+        const char* link;
+        int         linkLength;
+        void*       userData;
+    };
+    
     struct MarkdownConfig
     {
-        typedef void MarkdownLinkCallback( const char* link_, uint32_t linkLength_ );
+        typedef void LinkCallback( MarkdownLinkCallbackData data );
         struct HeadingFormat{ ImFont* font; bool separator; };
 
         static const int NUMHEADINGS = 3;
 
-        MarkdownLinkCallback* linkCallback = 0;
+        LinkCallback* linkCallback = NULL;
         const char* linkIcon = "";
         HeadingFormat headingFormats[ NUMHEADINGS ] = { NULL, true, NULL, true, NULL, true };
+        void* userData = NULL;
     };
 
     // External interface
@@ -430,7 +439,7 @@ namespace ImGui
                         {
                             if( mdConfig_.linkCallback )
                             {
-                                mdConfig_.linkCallback( markdown_ + link.url.start, link.url.size() );
+                                mdConfig_.linkCallback( { markdown_ + link.url.start, link.url.size(), mdConfig_.userData } );
                             }
                         }
                         ImGui::UnderLine( style.Colors[ ImGuiCol_ButtonHovered ] );

@@ -69,9 +69,9 @@ Normal text
 // You can make your own Markdown function with your prefered string container and markdown config.
 static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { NULL, true, NULL, true, NULL, false } };
 
-void LinkCallback( const char* link_, uint32_t linkLength_ )
+void LinkCallback( MarkdownLinkCallbackData data_ )
 {
-    std::string url( link_, linkLength_ );
+    std::string url( data_.link, data_.linkLength );
     ShellExecuteA( NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL );
 }
 
