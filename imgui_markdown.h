@@ -19,6 +19,11 @@
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
+/*
+API BREAKING CHANGES
+====================
+- 2019/02/01 - Changed LinkCallback parameters, see https://github.com/juliettef/imgui_markdown/issues/2
+*/
 
 /*
 imgui_markdown https://github.com/juliettef/imgui_markdown
@@ -140,23 +145,23 @@ namespace ImGui
     
     struct MarkdownConfig
     {
-        typedef void LinkCallback( MarkdownLinkCallbackData data );
-        struct HeadingFormat{ ImFont* font; bool separator; };
+        typedef void     LinkCallback( MarkdownLinkCallbackData data );
+        struct           HeadingFormat{ ImFont* font; bool separator; };
 
         static const int NUMHEADINGS = 3;
 
-        LinkCallback* linkCallback = NULL;
-        const char* linkIcon = "";
-        HeadingFormat headingFormats[ NUMHEADINGS ] = { NULL, true, NULL, true, NULL, true };
-        void* userData = NULL;
+        LinkCallback*    linkCallback = NULL;
+        const char*      linkIcon = "";
+        HeadingFormat    headingFormats[ NUMHEADINGS ] = { NULL, true, NULL, true, NULL, true };
+        void*            userData = NULL;
     };
 
     // External interface
     inline void Markdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ );
 
     // Internals
-    struct TextRegion;
-    struct Line;
+    struct      TextRegion;
+    struct      Line;
     inline void UnderLine( ImColor col_ );
     inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ );
 
@@ -176,7 +181,7 @@ namespace ImGui
         void RenderTextWrapped( const char* text, const char* text_end, bool bIndentToHere = false )
         {
             const float scale = 1.0f;
-            float widthLeft = GetContentRegionAvail().x;
+            float       widthLeft = GetContentRegionAvail().x;
             const char* endPrevLine = pFont->CalcWordWrapPositionA( scale, text, text_end, widthLeft );
             ImGui::TextUnformatted( text, endPrevLine );
             if( bIndentToHere )
@@ -215,7 +220,7 @@ namespace ImGui
         }
 
     private:
-        float indentX;
+        float   indentX;
         ImFont* pFont;
     };
 
@@ -224,11 +229,11 @@ namespace ImGui
         bool isHeading = false;
         bool isUnorderedListStart = false;
         bool isLeadingSpace = true;     // spaces at start of line
-        int leadSpaceCount = 0;
-        int headingCount = 0;
-        int lineStart = 0;
-        int lineEnd   = 0;
-        int lastRenderPosition = 0;     // lines may get rendered in multiple pieces
+        int  leadSpaceCount = 0;
+        int  headingCount = 0;
+        int  lineStart = 0;
+        int  lineEnd   = 0;
+        int  lastRenderPosition = 0;     // lines may get rendered in multiple pieces
     };
 
     struct TextBlock {                  // subset of line
@@ -329,9 +334,9 @@ namespace ImGui
     inline void Markdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ )
     {
         ImGuiStyle& style = ImGui::GetStyle();
-        Line line;
-        Link link;
-        TextRegion textRegion;
+        Line        line;
+        Link        link;
+        TextRegion  textRegion;
 
         char c = 0;
         for( int i=0; i < (int)markdownLength_; ++i )
