@@ -77,7 +77,7 @@ Links:
 #include <string>
 
 // You can make your own Markdown function with your prefered string container and markdown config.
-static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { NULL, true, NULL, true, NULL, false } };
+static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { { NULL, true }, { NULL, true }, { NULL, false } } };
 
 void LinkCallback( MarkdownLinkCallbackData data_ )
 {
@@ -152,7 +152,7 @@ namespace ImGui
 
         LinkCallback*    linkCallback = NULL;
         const char*      linkIcon = "";
-        HeadingFormat    headingFormats[ NUMHEADINGS ] = { NULL, true, NULL, true, NULL, true };
+        HeadingFormat    headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
         void*            userData = NULL;
     };
 
@@ -199,6 +199,10 @@ namespace ImGui
                 text = endPrevLine;
                 if( *text == ' ' ) { ++text; }    // skip a space at start of line
                 endPrevLine = pFont->CalcWordWrapPositionA( scale, text, text_end, widthLeft );
+                if( text == endPrevLine ) 
+                {
+                    endPrevLine++;
+                }
                 ImGui::TextUnformatted( text, endPrevLine );
             }
         }

@@ -67,7 +67,7 @@ Normal text
 #include <string>
 
 // You can make your own Markdown function with your prefered string container and markdown config.
-static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { NULL, true, NULL, true, NULL, false } };
+static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { { NULL, true }, { NULL, true }, { NULL, false } } };
 
 void LinkCallback( MarkdownLinkCallbackData data_ )
 {
