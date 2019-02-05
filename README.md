@@ -66,13 +66,25 @@ Normal text
 #include "Shellapi.h"
 #include <string>
 
-// You can make your own Markdown function with your prefered string container and markdown config.
-static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { { NULL, true }, { NULL, true }, { NULL, false } } };
+void LinkCallback( ImGui::MarkdownLinkCallbackData data_ );
+inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData data_ );
 
-void LinkCallback( MarkdownLinkCallbackData data_ )
+// You can make your own Markdown function with your prefered string container and markdown config.
+static ImGui::MarkdownConfig mdConfig{ LinkCallback, ImageCallback, ICON_FA_LINK, { { NULL, true }, { NULL, true }, { NULL, false } } };
+
+void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
 {
     std::string url( data_.link, data_.linkLength );
     ShellExecuteA( NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL );
+}
+
+inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData data_ )
+{
+    // In your application you would load an image based on
+    // data_ input. Here we just use the imgui font texture.
+    ImTextureID image = ImGui::GetIO().Fonts->TexID;
+    ImGui::MarkdownImageData imageData{ true, image, ImVec2( 40.0f, 20.0f ) };
+    return imageData;
 }
 
 void LoadFonts( float fontSize_ = 12.0f )

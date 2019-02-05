@@ -23,6 +23,7 @@
 API BREAKING CHANGES
 ====================
 - 2019/02/01 - Changed LinkCallback parameters, see https://github.com/juliettef/imgui_markdown/issues/2
+- 2019/02/05 - Added ImageCallback parameter to ImGui::MarkdownConfig
 */
 
 /*
@@ -76,13 +77,24 @@ Links:
 #include "Shellapi.h"
 #include <string>
 
-// You can make your own Markdown function with your prefered string container and markdown config.
-static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { { NULL, true }, { NULL, true }, { NULL, false } } };
+void LinkCallback( ImGui::MarkdownLinkCallbackData data_ );
+inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData data_ );
 
-void LinkCallback( MarkdownLinkCallbackData data_ )
+// You can make your own Markdown function with your prefered string container and markdown config.
+static ImGui::MarkdownConfig mdConfig{ LinkCallback, ImageCallback, ICON_FA_LINK, { { NULL, true }, { NULL, true }, { NULL, false } } };
+
+void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
 {
     std::string url( data_.link, data_.linkLength );
     ShellExecuteA( NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL );
+}
+
+inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData data_ )
+{
+    // In your application you would load an image based on data_ input. Here we just use the imgui font texture.
+    ImTextureID image = ImGui::GetIO().Fonts->TexID;
+    ImGui::MarkdownImageData imageData{ true, image, ImVec2( 40.0f, 20.0f ) };
+    return imageData;
 }
 
 void LoadFonts( float fontSize_ = 12.0f )
@@ -136,21 +148,34 @@ namespace ImGui
     //     * font is the index into the ImGui font array
     //     * separator controls whether an underlined separator is drawn after the header
 
-    struct MarkdownLinkCallbackData
+    struct MarkdownLinkCallbackData         // for both links and images
     {
         const char* link;
         int         linkLength;
         void*       userData;
     };
     
+    struct MarkdownImageData
+    {
+        bool            isValid = false;    // if false, won't draw the image
+        ImTextureID     user_texture_id; 
+        const ImVec2    size;
+        const ImVec2    uv0 = ImVec2( 0, 0 );
+        const ImVec2    uv1 = ImVec2( 1, 1 );
+        const ImVec4    tint_col = ImVec4( 1, 1, 1, 1 );
+        const ImVec4    border_col = ImVec4( 0, 0, 0, 0 );
+    };
+
     struct MarkdownConfig
     {
-        typedef void     LinkCallback( MarkdownLinkCallbackData data );
-        struct           HeadingFormat{ ImFont* font; bool separator; };
+        typedef void                LinkCallback( MarkdownLinkCallbackData data );
+        typedef MarkdownImageData   ImageCallback( MarkdownLinkCallbackData data );
+        struct                      HeadingFormat{ ImFont* font; bool separator; };
 
         static const int NUMHEADINGS = 3;
 
         LinkCallback*    linkCallback = NULL;
+        ImageCallback*   imageCallback = NULL;
         const char*      linkIcon = "";
         HeadingFormat    headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
         void*            userData = NULL;
@@ -259,6 +284,7 @@ namespace ImGui
         LinkState state = NO_LINK;
         TextBlock text;
         TextBlock url;
+        bool isImage = false;
     };
 
     inline void UnderLine( ImColor col_ )
@@ -362,7 +388,7 @@ namespace ImGui
                     line.lastRenderPosition = i - 1;
                     if(( c == '*' ) && ( line.leadSpaceCount >= 2 ))
                     {
-                        if(( markdownLength_ > i + 1 ) && ( markdown_[ i + 1 ] == ' ' ))    // space after '*'
+                        if(( (int)markdownLength_ > i + 1 ) && ( markdown_[ i + 1 ] == ' ' ))    // space after '*'
                         {
                             line.isUnorderedListStart = true;
                             ++i;
@@ -375,7 +401,7 @@ namespace ImGui
                         line.headingCount++;
                         bool bContinueChecking = true;
                         uint32_t j = i;
-                        while( ++j < markdownLength_ && bContinueChecking )
+                        while( ++j < (int)markdownLength_ && bContinueChecking )
                         {
                             c = markdown_[j];
                             switch( c )
@@ -408,6 +434,10 @@ namespace ImGui
                 {
                     link.state = Link::HAS_SQUARE_BRACKET_OPEN;
                     link.text.start = i + 1;
+                    if( i > 0 && markdown_[i - 1] == '!' )
+                    {
+                        link.isImage = true;
+                    }
                 }
                 break;
             case Link::HAS_SQUARE_BRACKET_OPEN:
@@ -425,46 +455,69 @@ namespace ImGui
                 }
                 break;
             case Link::HAS_SQUARE_BRACKETS_ROUND_BRACKET_OPEN:
-                if( c == ')' )    // it's a link, render it.
+                if( c == ')' )
                 {
                     // render previous line content
-                    line.lineEnd = link.text.start - 1;
+                    line.lineEnd = link.text.start - ( link.isImage ? 2 : 1 );
                     RenderLine( markdown_, line, textRegion, mdConfig_ );
                     line.leadSpaceCount = 0;
                     line.isUnorderedListStart = false;    // the following text shouldn't have bullets
 
-                    // render link
-                    link.url.stop = i;
-                    ImGui::SameLine( 0.0f, 0.0f );
-                    ImGui::PushStyleColor( ImGuiCol_Text, style.Colors[ ImGuiCol_ButtonHovered ]);
-                    ImGui::PushTextWrapPos(-1.0f);
-                    const char* text = markdown_ + link.text.start ;
-                    ImGui::TextUnformatted( text, text + link.text.size() );
-                    ImGui::PopTextWrapPos();
-                    ImGui::PopStyleColor();
-                    if (ImGui::IsItemHovered())
+                    if( link.isImage )   // it's an image, render it.
                     {
-                        if( ImGui::IsMouseClicked(0) )
+                        bool drawnImage = false;
+                        if( mdConfig_.imageCallback )
                         {
-                            if( mdConfig_.linkCallback )
+                            MarkdownImageData imageData = mdConfig_.imageCallback({ markdown_ + link.url.start, link.url.size(), mdConfig_.userData });
+                            if( imageData.isValid )
                             {
-                                mdConfig_.linkCallback( { markdown_ + link.url.start, link.url.size(), mdConfig_.userData } );
+                                ImGui::Image( imageData.user_texture_id, imageData.size, imageData.uv0, imageData.uv1, imageData.tint_col, imageData.border_col );
+                                drawnImage = true;
                             }
                         }
-                        ImGui::UnderLine( style.Colors[ ImGuiCol_ButtonHovered ] );
-                        ImGui::SetTooltip( "%s Open in browser\n%.*s", mdConfig_.linkIcon, link.url.size(), markdown_ + link.url.start );
+                        if( !drawnImage )
+                        {
+                            link.url.stop = i;
+                            ImGui::Text( "( Image %.*s not loaded )", link.url.size(), markdown_ + link.url.start );
+                        }
+                        if( ImGui::IsItemHovered() )
+                        {
+                            ImGui::SetTooltip( "%.*s", link.text.size(), markdown_ + link.text.start );
+                        }
                     }
-                    else
+                    else                 // it's a link, render it.
                     {
-                        ImGui::UnderLine( style.Colors[ ImGuiCol_Button ] );
+                        link.url.stop = i;
+                        ImGui::SameLine( 0.0f, 0.0f );
+                        ImGui::PushStyleColor( ImGuiCol_Text, style.Colors[ ImGuiCol_ButtonHovered ] );
+                        ImGui::PushTextWrapPos( -1.0f );
+                        const char* text = markdown_ + link.text.start;
+                        ImGui::TextUnformatted( text, text + link.text.size() );
+                        ImGui::PopTextWrapPos();
+                        ImGui::PopStyleColor();
+                        if( ImGui::IsItemHovered() )
+                        {
+                            if( ImGui::IsMouseClicked( 0 ))
+                            {
+                                if( mdConfig_.linkCallback )
+                                {
+                                    mdConfig_.linkCallback({ markdown_ + link.url.start, link.url.size(), mdConfig_.userData });
+                                }
+                            }
+                            ImGui::UnderLine( style.Colors[ ImGuiCol_ButtonHovered ] );
+                            ImGui::SetTooltip( "%s Open in browser\n%.*s", mdConfig_.linkIcon, link.url.size(), markdown_ + link.url.start );
+                        }
+                        else
+                        {
+                            ImGui::UnderLine( style.Colors[ ImGuiCol_Button ] );
+                        }
+                        ImGui::SameLine( 0.0f, 0.0f );
                     }
-                    ImGui::SameLine( 0.0f, 0.0f );
-                        
                     // reset the link by reinitializing it
                     link = Link();
                     line.lastRenderPosition = i;
+                    break;
                 }
-                break;
             }
 
             // handle end of line (render)
