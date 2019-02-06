@@ -461,6 +461,7 @@ namespace ImGui
                     line.lineEnd = link.text.start - ( link.isImage ? 2 : 1 );
                     RenderLine( markdown_, line, textRegion, mdConfig_ );
                     line.leadSpaceCount = 0;
+                    link.url.stop = i;
                     line.isUnorderedListStart = false;    // the following text shouldn't have bullets
 
                     if( link.isImage )   // it's an image, render it.
@@ -477,7 +478,6 @@ namespace ImGui
                         }
                         if( !drawnImage )
                         {
-                            link.url.stop = i;
                             ImGui::Text( "( Image %.*s not loaded )", link.url.size(), markdown_ + link.url.start );
                         }
                         if( ImGui::IsItemHovered() )
@@ -487,7 +487,6 @@ namespace ImGui
                     }
                     else                 // it's a link, render it.
                     {
-                        link.url.stop = i;
                         ImGui::SameLine( 0.0f, 0.0f );
                         ImGui::PushStyleColor( ImGuiCol_Text, style.Colors[ ImGuiCol_ButtonHovered ] );
                         ImGui::PushTextWrapPos( -1.0f );
