@@ -150,6 +150,8 @@ namespace ImGui
 
     struct MarkdownLinkCallbackData         // for both links and images
     {
+        const char* text;
+        int         textLength;
         const char* link;
         int         linkLength;
         void*       userData;
@@ -469,7 +471,7 @@ namespace ImGui
                         bool drawnImage = false;
                         if( mdConfig_.imageCallback )
                         {
-                            MarkdownImageData imageData = mdConfig_.imageCallback({ markdown_ + link.url.start, link.url.size(), mdConfig_.userData });
+                            MarkdownImageData imageData = mdConfig_.imageCallback({ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData });
                             if( imageData.isValid )
                             {
                                 ImGui::Image( imageData.user_texture_id, imageData.size, imageData.uv0, imageData.uv1, imageData.tint_col, imageData.border_col );
@@ -489,8 +491,7 @@ namespace ImGui
                     {
                         ImGui::PushStyleColor( ImGuiCol_Text, style.Colors[ ImGuiCol_ButtonHovered ] );
                         ImGui::PushTextWrapPos( -1.0f );
-                        const char* text = markdown_ + link.text.start;
-                        ImGui::TextUnformatted( text, text + link.text.size() );
+                        ImGui::TextUnformatted( markdown_ + link.text.start, markdown_ + link.text.start + link.text.size() );
                         ImGui::PopTextWrapPos();
                         ImGui::PopStyleColor();
                         if( ImGui::IsItemHovered() )
@@ -499,7 +500,7 @@ namespace ImGui
                             {
                                 if( mdConfig_.linkCallback )
                                 {
-                                    mdConfig_.linkCallback({ markdown_ + link.url.start, link.url.size(), mdConfig_.userData });
+                                    mdConfig_.linkCallback({ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData });
                                 }
                             }
                             ImGui::UnderLine( style.Colors[ ImGuiCol_ButtonHovered ] );
