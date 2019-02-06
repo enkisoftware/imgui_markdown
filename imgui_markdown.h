@@ -168,19 +168,24 @@ namespace ImGui
         const ImVec4    border_col = ImVec4( 0, 0, 0, 0 );
     };
 
+    typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );
+    typedef MarkdownImageData   MarkdownImageCallback( MarkdownLinkCallbackData data );
+
+    struct MarkdownHeadingFormat
+    {
+        ImFont* font; 
+        bool separator; 
+    };
+
     struct MarkdownConfig
     {
-        typedef void                LinkCallback( MarkdownLinkCallbackData data );
-        typedef MarkdownImageData   ImageCallback( MarkdownLinkCallbackData data );
-        struct                      HeadingFormat{ ImFont* font; bool separator; };
-
         static const int NUMHEADINGS = 3;
 
-        LinkCallback*    linkCallback = NULL;
-        ImageCallback*   imageCallback = NULL;
-        const char*      linkIcon = "";
-        HeadingFormat    headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
-        void*            userData = NULL;
+        MarkdownLinkCallback*   linkCallback = NULL;
+        MarkdownImageCallback*  imageCallback = NULL;
+        const char*             linkIcon = "";
+        MarkdownHeadingFormat   headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
+        void*                   userData = NULL;
     };
 
     // External interface
@@ -320,7 +325,7 @@ namespace ImGui
         }
         else if( line_.isHeading )          // render heading
         {
-            MarkdownConfig::HeadingFormat fmt;
+            MarkdownHeadingFormat fmt;
             if( line_.headingCount > mdConfig_.NUMHEADINGS )
             {
                 fmt = mdConfig_.headingFormats[ mdConfig_.NUMHEADINGS - 1 ];
