@@ -463,7 +463,7 @@ namespace ImGui
                     line.leadSpaceCount = 0;
                     link.url.stop = i;
                     line.isUnorderedListStart = false;    // the following text shouldn't have bullets
-
+                    ImGui::SameLine( 0.0f, 0.0f );
                     if( link.isImage )   // it's an image, render it.
                     {
                         bool drawnImage = false;
@@ -487,7 +487,6 @@ namespace ImGui
                     }
                     else                 // it's a link, render it.
                     {
-                        ImGui::SameLine( 0.0f, 0.0f );
                         ImGui::PushStyleColor( ImGuiCol_Text, style.Colors[ ImGuiCol_ButtonHovered ] );
                         ImGui::PushTextWrapPos( -1.0f );
                         const char* text = markdown_ + link.text.start;
@@ -510,8 +509,8 @@ namespace ImGui
                         {
                             ImGui::UnderLine( style.Colors[ ImGuiCol_Button ] );
                         }
-                        ImGui::SameLine( 0.0f, 0.0f );
                     }
+                    ImGui::SameLine( 0.0f, 0.0f );
                     // reset the link by reinitializing it
                     link = Link();
                     line.lastRenderPosition = i;
