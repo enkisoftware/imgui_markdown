@@ -11,6 +11,7 @@ imgui_markdown currently supports the following markdown functionality:
   * Indented text, multi levels
   * Unordered lists and sub-lists
   * Links
+  * Images
 
 ![imgui_markdown demo live editing](https://github.com/juliettef/Media/blob/master/imgui_markdown_demo_live_editing.gif)
 
@@ -49,6 +50,10 @@ Normal text
 ```
 [link description](https://...)
 ```
+### Images
+```
+![image alt text](image identifier e.g. filename)
+```
 
 ![Example use of imgui_markdown with icon fonts](https://github.com/juliettef/Media/blob/master/imgui_markdown_icon_font.jpg)
 
@@ -75,15 +80,17 @@ static ImGui::MarkdownConfig mdConfig{ LinkCallback, ImageCallback, ICON_FA_LINK
 void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
 {
     std::string url( data_.link, data_.linkLength );
-    ShellExecuteA( NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL );
+    if( !data_.isImage )
+    {
+        ShellExecuteA( NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL );
+    }
 }
 
 inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData data_ )
 {
-    // In your application you would load an image based on
-    // data_ input. Here we just use the imgui font texture.
+    // In your application you would load an image based on data_ input. Here we just use the imgui font texture.
     ImTextureID image = ImGui::GetIO().Fonts->TexID;
-    ImGui::MarkdownImageData imageData{ true, image, ImVec2( 40.0f, 20.0f ) };
+    ImGui::MarkdownImageData imageData{ true, false, image, ImVec2( 40.0f, 20.0f ) };
     return imageData;
 }
 

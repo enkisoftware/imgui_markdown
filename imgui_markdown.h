@@ -24,6 +24,7 @@ API BREAKING CHANGES
 ====================
 - 2019/02/01 - Changed LinkCallback parameters, see https://github.com/juliettef/imgui_markdown/issues/2
 - 2019/02/05 - Added ImageCallback parameter to ImGui::MarkdownConfig
+- 2019/02/06 - Added useLinkCallback member variable to MarkdownImageData to configure using images as links
 */
 
 /*
@@ -86,14 +87,17 @@ static ImGui::MarkdownConfig mdConfig{ LinkCallback, ImageCallback, ICON_FA_LINK
 void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
 {
     std::string url( data_.link, data_.linkLength );
-    ShellExecuteA( NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL );
+    if( !data_.isImage )
+    {
+        ShellExecuteA( NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL );
+    }
 }
 
 inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData data_ )
 {
     // In your application you would load an image based on data_ input. Here we just use the imgui font texture.
     ImTextureID image = ImGui::GetIO().Fonts->TexID;
-    ImGui::MarkdownImageData imageData{ true, image, ImVec2( 40.0f, 20.0f ) };
+    ImGui::MarkdownImageData imageData{ true, false, image, ImVec2( 40.0f, 20.0f ) };
     return imageData;
 }
 
@@ -155,11 +159,13 @@ namespace ImGui
         const char* link;
         int         linkLength;
         void*       userData;
+        bool        isImage;
     };
     
     struct MarkdownImageData
     {
-        bool            isValid = false;    // if false, won't draw the image
+        bool            isValid = false;            // if true, will draw the image
+        bool            useLinkCallback = false;    // if true, linkCallback will be called when image is clicked
         ImTextureID     user_texture_id; 
         const ImVec2    size;
         const ImVec2    uv0 = ImVec2( 0, 0 );
@@ -474,9 +480,11 @@ namespace ImGui
                     if( link.isImage )   // it's an image, render it.
                     {
                         bool drawnImage = false;
+                        bool useLinkCallback = false;
                         if( mdConfig_.imageCallback )
                         {
                             MarkdownImageData imageData = mdConfig_.imageCallback({ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData });
+                            useLinkCallback = imageData.useLinkCallback;
                             if( imageData.isValid )
                             {
                                 ImGui::Image( imageData.user_texture_id, imageData.size, imageData.uv0, imageData.uv1, imageData.tint_col, imageData.border_col );
@@ -489,6 +497,10 @@ namespace ImGui
                         }
                         if( ImGui::IsItemHovered() )
                         {
+                            if( ImGui::IsMouseClicked( 0 ) && mdConfig_.linkCallback && useLinkCallback )
+                            {
+                                mdConfig_.linkCallback( { markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true } );
+                            }
                             ImGui::SetTooltip( "%.*s", link.text.size(), markdown_ + link.text.start );
                         }
                     }
@@ -501,12 +513,9 @@ namespace ImGui
                         ImGui::PopStyleColor();
                         if( ImGui::IsItemHovered() )
                         {
-                            if( ImGui::IsMouseClicked( 0 ))
+                            if( ImGui::IsMouseClicked( 0 ) && mdConfig_.linkCallback )
                             {
-                                if( mdConfig_.linkCallback )
-                                {
-                                    mdConfig_.linkCallback({ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData });
-                                }
+                                mdConfig_.linkCallback({ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, false });
                             }
                             ImGui::UnderLine( style.Colors[ ImGuiCol_ButtonHovered ] );
                             ImGui::SetTooltip( "%s Open in browser\n%.*s", mdConfig_.linkIcon, link.url.size(), markdown_ + link.url.start );
