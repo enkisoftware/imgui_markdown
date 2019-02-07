@@ -14,7 +14,8 @@ imgui_markdown currently supports the following markdown functionality:
   * Images
 
 ![imgui_markdown demo live editing](https://github.com/juliettef/Media/blob/master/imgui_markdown_demo_live_editing.gif)
-Note - this gif is heavily compressed due to GitHub limitations. There's a (slightly) [better version of it on twitter](https://twitter.com/juulcat/status/1090996799266000898).
+
+*Note - the gif above is heavily compressed due to GitHub limitations. There's a [(slightly) better version of it on twitter](https://twitter.com/juulcat/status/1090996799266000898).*
 
 ## Syntax
 
