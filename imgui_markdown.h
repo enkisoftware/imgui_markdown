@@ -39,6 +39,7 @@ imgui_markdown currently supports the following markdown functionality:
  - Indented text, multi levels
  - Unordered lists and sub-lists
  - Links
+ - Images
  
 Syntax
 
@@ -63,6 +64,9 @@ For nested lists, add two additional spaces in front of the asterisk per list le
 
 Links:
 [link description](https://...)
+
+Images:
+![image alt text](image identifier e.g. filename)
 
 ===============================================================================
 
@@ -145,61 +149,68 @@ You can add [links like this one to enkisoftware](https://www.enkisoftware.com/)
 
 namespace ImGui
 {
-    // Configuration struct for Markdown
-    //   * linkCallback is called when a link is clicked on
-    //   * linkIcon is a string which encode a "Link" icon, if available in the current font (e.g. linkIcon = ICON_FA_LINK with FontAwesome + IconFontCppHeaders https://github.com/juliettef/IconFontCppHeaders)
-    //   * HeadingFormat controls the format of heading H1 to H3, those above H3 use H3 format
-    //     * font is the index into the ImGui font array
-    //     * separator controls whether an underlined separator is drawn after the header
+    //-----------------------------------------------------------------------------
+    // Basic types
+    //-----------------------------------------------------------------------------
 
-    struct MarkdownLinkCallbackData         // for both links and images
+    struct MarkdownLinkCallbackData                                 // for both links and images
     {
-        const char* text;
-        int         textLength;
-        const char* link;
-        int         linkLength;
-        void*       userData;
-        bool        isImage;
+        const char*             text;                               // text between square brackets []
+        int                     textLength;
+        const char*             link;                               // text between brackets ()
+        int                     linkLength;
+        void*                   userData;
+        bool                    isImage;                            // true if '!' is detected in front of the link syntax
     };
     
     struct MarkdownImageData
     {
-        bool            isValid = false;            // if true, will draw the image
-        bool            useLinkCallback = false;    // if true, linkCallback will be called when image is clicked
-        ImTextureID     user_texture_id; 
-        const ImVec2    size;
-        const ImVec2    uv0 = ImVec2( 0, 0 );
-        const ImVec2    uv1 = ImVec2( 1, 1 );
-        const ImVec4    tint_col = ImVec4( 1, 1, 1, 1 );
-        const ImVec4    border_col = ImVec4( 0, 0, 0, 0 );
+        bool                    isValid = false;                    // if true, will draw the image
+        bool                    useLinkCallback = false;            // if true, linkCallback will be called when image is clicked
+        ImTextureID             user_texture_id;                    // see ImGui::Image
+        const ImVec2            size;                               // see ImGui::Image
+        const ImVec2            uv0 = ImVec2( 0, 0 );               // see ImGui::Image
+        const ImVec2            uv1 = ImVec2( 1, 1 );               // see ImGui::Image
+        const ImVec4            tint_col = ImVec4( 1, 1, 1, 1 );    // see ImGui::Image
+        const ImVec4            border_col = ImVec4( 0, 0, 0, 0 );  // see ImGui::Image
     };
 
     typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );
     typedef MarkdownImageData   MarkdownImageCallback( MarkdownLinkCallbackData data );
 
     struct MarkdownHeadingFormat
-    {
-        ImFont* font; 
-        bool separator; 
+    {   
+        ImFont*                 font;                               // ImGui font
+        bool                    separator;                          // if true, an underlined separator is drawn after the header
     };
 
+    // Configuration struct for Markdown
+    // - linkCallback is called when a link is clicked on
+    // - linkIcon is a string which encode a "Link" icon, if available in the current font (e.g. linkIcon = ICON_FA_LINK with FontAwesome + IconFontCppHeaders https://github.com/juliettef/IconFontCppHeaders)
+    // - HeadingFormat controls the format of heading H1 to H3, those above H3 use H3 format
     struct MarkdownConfig
     {
-        static const int NUMHEADINGS = 3;
+        static const int        NUMHEADINGS = 3;
 
         MarkdownLinkCallback*   linkCallback = NULL;
         MarkdownImageCallback*  imageCallback = NULL;
-        const char*             linkIcon = "";
+        const char*             linkIcon = "";                      // icon displayd in link tooltip
         MarkdownHeadingFormat   headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
         void*                   userData = NULL;
     };
 
+    //-----------------------------------------------------------------------------
     // External interface
+    //-----------------------------------------------------------------------------
+
     inline void Markdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ );
 
+    //-----------------------------------------------------------------------------
     // Internals
-    struct      TextRegion;
-    struct      Line;
+    //-----------------------------------------------------------------------------
+
+    struct TextRegion;
+    struct Line;
     inline void UnderLine( ImColor col_ );
     inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ );
 
