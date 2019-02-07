@@ -14,6 +14,7 @@ imgui_markdown currently supports the following markdown functionality:
   * Images
 
 ![imgui_markdown demo live editing](https://github.com/juliettef/Media/blob/master/imgui_markdown_demo_live_editing.gif)
+Note - this gif is heavily compressed due to GitHub limitations. There's a (slightly) [better version of it on twitter](https://twitter.com/juulcat/status/1090996799266000898).
 
 ## Syntax
 
@@ -54,6 +55,7 @@ Normal text
 ```
 ![image alt text](image identifier e.g. filename)
 ```
+
 
 ![Example use of imgui_markdown with icon fonts](https://github.com/juliettef/Media/blob/master/imgui_markdown_icon_font.jpg)
 
