@@ -501,7 +501,10 @@ namespace ImGui
                             {
                                 mdConfig_.linkCallback( { markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true } );
                             }
-                            ImGui::SetTooltip( "%.*s", link.text.size(), markdown_ + link.text.start );
+                            if( link.text.size() > 0 )
+                            {
+                                ImGui::SetTooltip( "%.*s", link.text.size(), markdown_ + link.text.start );
+                            }
                         }
                     }
                     else                 // it's a link, render it.
