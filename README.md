@@ -146,12 +146,17 @@ Avoyd is an abstract 6 degrees of freedom voxel game. The game and the voxel edi
 ![Avoyd screenshot](https://github.com/juliettef/Media/blob/master/imgui_markdown_Avoyd_about_OSS.png)
 
 ### [bgfx](https://github.com/bkaradzic/bgfx)
-Cross-platform rendering library.
+Cross-platform rendering library
 
 ### [Imogen](https://github.com/CedricGuillemet/Imogen)
 GPU/CPU Texture Generator
 
 ![Imogen screenshot](https://camo.githubusercontent.com/28347bc0c1627aa4f289e1b2b769afcb3a5de370/68747470733a2f2f692e696d6775722e636f6d2f7351664f3542722e706e67)
+
+### [Light Tracer](https://lighttracer.org/)
+Experimental GPU ray tracer for web
+
+![Light Tracer screenshot](https://github.com/juliettef/Media/blob/master/imgui_markdown_Light_Tracer.png)
 
 ## Credits
 
