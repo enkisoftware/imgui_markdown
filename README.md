@@ -140,29 +140,39 @@ You can add [links like this one to enkisoftware](https://www.enkisoftware.com/)
 
 ## Projects using imgui_markdown
 
-### [Avoyd](https://www.avoyd.com)
-Avoyd is an abstract 6 degrees of freedom voxel game. The game and the voxel editor's help and tutorials use imgui_markdown with Dear ImGui.
+### [Avoyd](https://www.enkisoftware.com/avoyd)
+Avoyd is an abstract 6 degrees of freedom voxel game.  
+[www.avoyd.com](https://www.avoyd.com)  
 
-![Avoyd screenshot](https://github.com/juliettef/Media/blob/master/imgui_markdown_Avoyd_about_OSS.png)
+The game and the voxel editor's help and tutorials use imgui_markdown with Dear ImGui.  
+
+![Avoyd screenshot](https://github.com/juliettef/Media/blob/master/imgui_markdown_Avoyd_about_OSS.png?raw=true)
 
 ### [bgfx](https://github.com/bkaradzic/bgfx)
-Cross-platform rendering library
+Cross-platform rendering library.  
+[bkaradzic.github.io/bgfx/overview](https://bkaradzic.github.io/bgfx/overview.html)
 
 ### [Imogen](https://github.com/CedricGuillemet/Imogen)
-GPU/CPU Texture Generator
+GPU/CPU Texture Generator  
+[skaven.fr/imogen](http://skaven.fr/imogen/)
 
 ![Imogen screenshot](https://camo.githubusercontent.com/28347bc0c1627aa4f289e1b2b769afcb3a5de370/68747470733a2f2f692e696d6775722e636f6d2f7351664f3542722e706e67)
 
 ### [Light Tracer](https://lighttracer.org/)
 Experimental GPU ray tracer for web
 
-![Light Tracer screenshot](https://github.com/juliettef/Media/blob/master/imgui_markdown_Light_Tracer.png)
+![Light Tracer screenshot](https://github.com/juliettef/Media/blob/master/imgui_markdown_Light_Tracer.png?raw=true)
 
-### [Visual6502 Remix](https://floooh.github.io/visual6502remix/)
-[https://github.com/floooh/v6502r](https://github.com/floooh/v6502r)  
-Using imgui_markdown as help viewer for Visual6502 Remix with internal and external links:  
-[![Using imgui_markdown as help viewer for Visual6502 Remix with internal and external links - animated gif](https://user-images.githubusercontent.com/1699414/69185510-320baa00-0b17-11ea-9fd5-82ed6e02a05c.gif)
-![Using imgui_markdown as help viewer for Visual6502 Remix - screenshot](https://user-images.githubusercontent.com/1699414/69185626-67b09300-0b17-11ea-85a8-fed54a0082b4.png)](https://github.com/ocornut/imgui/issues/2847#issuecomment-555710973)
+### [Visual 6502 Remix](https://github.com/floooh/v6502r)
+Transistor level 6502 Hardware Simulation  
+[hfloooh.github.io/visual6502remix](https://floooh.github.io/visual6502remix/)  
+
+Using imgui_markdown as help viewer for Visual 6502 Remix with internal and external links: 
+ 
+[![Using imgui_markdown as help viewer for Visual 6502 Remix with internal and external links - animated gif](https://user-images.githubusercontent.com/1699414/69185510-320baa00-0b17-11ea-9fd5-82ed6e02a05c.gif)
+![Using imgui_markdown as help viewer for Visual 6502 Remix - screenshot](https://user-images.githubusercontent.com/1699414/69185626-67b09300-0b17-11ea-85a8-fed54a0082b4.png)](https://github.com/ocornut/imgui/issues/2847#issuecomment-555710973)  
+
+![Using imgui_markdown in the About page for Visual 6502 Remix - screenshot](https://github.com/juliettef/Media/blob/master/imgui_markdown_Visual_6502_Remix_About.png?raw=true)
 
 ## Credits
 
