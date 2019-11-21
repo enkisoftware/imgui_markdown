@@ -158,6 +158,12 @@ Experimental GPU ray tracer for web
 
 ![Light Tracer screenshot](https://github.com/juliettef/Media/blob/master/imgui_markdown_Light_Tracer.png)
 
+### [Visual6502 Remix](https://floooh.github.io/visual6502remix/)
+[https://github.com/floooh/v6502r](https://github.com/floooh/v6502r)  
+Using imgui_markdown as help viewer for Visual6502 Remix with internal and external links:  
+[![Using imgui_markdown as help viewer for Visual6502 Remix with internal and external links - animated gif](https://user-images.githubusercontent.com/1699414/69185510-320baa00-0b17-11ea-9fd5-82ed6e02a05c.gif)
+![Using imgui_markdown as help viewer for Visual6502 Remix - screenshot](https://user-images.githubusercontent.com/1699414/69185626-67b09300-0b17-11ea-85a8-fed54a0082b4.png)](https://github.com/ocornut/imgui/issues/2847#issuecomment-555710973)
+
 ## Credits
 
 Design and implementation - [Doug Binks](http://www.enkisoftware.com/about.html#doug) - [@dougbinks](https://github.com/dougbinks)  
