@@ -153,6 +153,9 @@ namespace ImGui
     // Basic types
     //-----------------------------------------------------------------------------
 
+    struct Link;
+    struct MarkdownConfig;
+
     struct MarkdownLinkCallbackData                                 // for both links and images
     {
         const char*             text;                               // text between square brackets []
@@ -226,13 +229,13 @@ namespace ImGui
 
         // ImGui::TextWrapped will wrap at the starting position
         // so to work around this we render using our own wrapping for the first line
-        void RenderTextWrapped( const char* text, const char* text_end, bool bIndentToHere = false )
+        void RenderTextWrapped( const char* text_, const char* text_end_, bool bIndentToHere_ = false )
         {
             const float scale = 1.0f;
             float       widthLeft = GetContentRegionAvail().x;
-            const char* endPrevLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text, text_end, widthLeft );
-            ImGui::TextUnformatted( text, endPrevLine );
-            if( bIndentToHere )
+            const char* endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+            ImGui::TextUnformatted( text_, endLine );
+            if( bIndentToHere_ )
             {
                 float indentNeeded = GetContentRegionAvail().x - widthLeft;
                 if( indentNeeded )
@@ -242,24 +245,55 @@ namespace ImGui
                 }
             }
             widthLeft = GetContentRegionAvail().x;
-            while( endPrevLine < text_end )
+            while( endLine < text_end_ )
             {
-                text = endPrevLine;
-                if( *text == ' ' ) { ++text; }    // skip a space at start of line
-                endPrevLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text, text_end, widthLeft );
-                if( text == endPrevLine ) 
+                text_ = endLine;
+                if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
+                endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+                if( text_ == endLine ) 
                 {
-                    endPrevLine++;
+                    endLine++;
                 }
-                ImGui::TextUnformatted( text, endPrevLine );
+                ImGui::TextUnformatted( text_, endLine );
             }
         }
 
-        void RenderListTextWrapped( const char* text, const char* text_end )
+        void RenderListTextWrapped( const char* text_, const char* text_end_ )
         {
             ImGui::Bullet();
             ImGui::SameLine();
-            RenderTextWrapped( text, text_end, true );
+            RenderTextWrapped( text_, text_end_, true );
+        }
+
+        void RenderLinkText( const char* text_, const char* text_end_, const Link& link_, const ImGuiStyle& style_, const char* markdown_, const MarkdownConfig& mdConfig_ );
+
+        void RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_, const ImGuiStyle& style_, const char* markdown_, const MarkdownConfig& mdConfig_, bool bIndentToHere_ = false )
+        {
+            const float scale = 1.0f;
+            float       widthLeft = GetContentRegionAvail().x;
+            const char* endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+            RenderLinkText( text_, endLine, link_, style_, markdown_, mdConfig_ );
+            if( bIndentToHere_ )
+            {
+                float indentNeeded = GetContentRegionAvail().x - widthLeft;
+                if( indentNeeded )
+                {
+                    ImGui::Indent( indentNeeded );
+                    indentX += indentNeeded;
+                }
+            }
+            widthLeft = GetContentRegionAvail().x;
+            while( endLine < text_end_ )
+            {
+                text_ = endLine;
+                if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
+                endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+                if( text_ == endLine ) 
+                {
+                    endLine++;
+                }
+                RenderLinkText( text_, endLine, link_, style_, markdown_, mdConfig_ );
+            }
         }
 
         void ResetIndent()
@@ -518,24 +552,7 @@ namespace ImGui
                     }
                     else                 // it's a link, render it.
                     {
-                        ImGui::PushStyleColor( ImGuiCol_Text, style.Colors[ ImGuiCol_ButtonHovered ] );
-                        ImGui::PushTextWrapPos( -1.0f );
-                        ImGui::TextUnformatted( markdown_ + link.text.start, markdown_ + link.text.start + link.text.size() );
-                        ImGui::PopTextWrapPos();
-                        ImGui::PopStyleColor();
-                        if( ImGui::IsItemHovered() )
-                        {
-                            if( ImGui::IsMouseClicked( 0 ) && mdConfig_.linkCallback )
-                            {
-                                mdConfig_.linkCallback({ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, false });
-                            }
-                            ImGui::UnderLine( style.Colors[ ImGuiCol_ButtonHovered ] );
-                            ImGui::SetTooltip( "%s Open in browser\n%.*s", mdConfig_.linkIcon, link.url.size(), markdown_ + link.url.start );
-                        }
-                        else
-                        {
-                            ImGui::UnderLine( style.Colors[ ImGuiCol_Button ] );
-                        }
+                        textRegion.RenderLinkTextWrapped( markdown_ + link.text.start, markdown_ + link.text.start + link.text.size(), link, style, markdown_, mdConfig_, true );
                     }
                     ImGui::SameLine( 0.0f, 0.0f );
                     // reset the link by reinitializing it
@@ -576,4 +593,29 @@ namespace ImGui
             RenderLine( markdown_, line, textRegion, mdConfig_ );
         }
     }
+
+
+    inline void TextRegion::RenderLinkText( const char* text_, const char* text_end_, const Link& link_, const ImGuiStyle& style_, const char* markdown_, const MarkdownConfig& mdConfig_ )
+    {
+        ImGui::PushStyleColor( ImGuiCol_Text, style_.Colors[ImGuiCol_ButtonHovered] );
+        ImGui::PushTextWrapPos( -1.0f );
+        ImGui::TextUnformatted( text_, text_end_ );
+        ImGui::PopTextWrapPos();
+        ImGui::PopStyleColor();
+        if(ImGui::IsItemHovered())
+        {
+            if(ImGui::IsMouseClicked( 0 ) && mdConfig_.linkCallback)
+            {
+                mdConfig_.linkCallback({ markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false });
+            }
+            ImGui::UnderLine( style_.Colors[ImGuiCol_ButtonHovered] );
+            ImGui::SetTooltip( "%s Open in browser\n%.*s", mdConfig_.linkIcon, link_.url.size(), markdown_ + link_.url.start );
+        }
+        else
+        {
+            ImGui::UnderLine( style_.Colors[ImGuiCol_Button] );
+        }
+    }
+
 }
+
