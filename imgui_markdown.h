@@ -165,6 +165,12 @@ namespace ImGui
         void*                   userData;
         bool                    isImage;                            // true if '!' is detected in front of the link syntax
     };
+
+    struct MarkdownTooltipCallbackData                              // for tooltips
+    {
+        MarkdownLinkCallbackData linkData;
+        const char*              linkIcon;
+    };
     
     struct MarkdownImageData
     {
@@ -178,7 +184,21 @@ namespace ImGui
         const ImVec4            border_col = ImVec4( 0, 0, 0, 0 );  // see ImGui::Image
     };
 
-    typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );
+    typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );    
+    typedef void                MarkdownTooltipCallback( MarkdownTooltipCallbackData data );
+
+    inline void defaultMarkdownTooltipCallback( MarkdownTooltipCallbackData data_ )
+    {
+        if( data_.linkData.isImage )
+        {
+            ImGui::SetTooltip( "%.*s", data_.linkData.linkLength, data_.linkData.link );
+        }
+        else
+        {
+            ImGui::SetTooltip( "%s Open in browser\n%.*s", data_.linkIcon, data_.linkData.linkLength, data_.linkData.link );
+        }
+    }
+
     typedef MarkdownImageData   MarkdownImageCallback( MarkdownLinkCallbackData data );
 
     struct MarkdownHeadingFormat
@@ -196,6 +216,7 @@ namespace ImGui
         static const int        NUMHEADINGS = 3;
 
         MarkdownLinkCallback*   linkCallback = NULL;
+        MarkdownTooltipCallback* tooltipCallback = NULL;
         MarkdownImageCallback*  imageCallback = NULL;
         const char*             linkIcon = "";                      // icon displayd in link tooltip
         MarkdownHeadingFormat   headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
@@ -520,9 +541,9 @@ namespace ImGui
                             {
                                 mdConfig_.linkCallback( { markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true } );
                             }
-                            if( link.text.size() > 0 )
+                            if( link.text.size() > 0 && mdConfig_.tooltipCallback )
                             {
-                                ImGui::SetTooltip( "%.*s", link.text.size(), markdown_ + link.text.start );
+                                mdConfig_.tooltipCallback( {{ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true }, mdConfig_.linkIcon } );
                             }
                         }
                     }
@@ -591,10 +612,13 @@ namespace ImGui
         {
             if(ImGui::IsMouseClicked( 0 ) && mdConfig_.linkCallback)
             {
-                mdConfig_.linkCallback({ markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false });
+                mdConfig_.linkCallback( { markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false } );
             }
             ImGui::UnderLine( style_.Colors[ImGuiCol_ButtonHovered] );
-            ImGui::SetTooltip( "%s Open in browser\n%.*s", mdConfig_.linkIcon, link_.url.size(), markdown_ + link_.url.start );
+            if( mdConfig_.tooltipCallback )
+            {
+                mdConfig_.tooltipCallback( {{ markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false }, mdConfig_.linkIcon } );
+            }
         }
         else
         {
