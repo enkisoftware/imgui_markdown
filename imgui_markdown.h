@@ -164,6 +164,11 @@ namespace ImGui
         int                     linkLength;
         void*                   userData;
         bool                    isImage;                            // true if '!' is detected in front of the link syntax
+        MarkdownLinkCallbackData() = default;
+        MarkdownLinkCallbackData(
+            const char* text, int textLength, const char* link, int linkLength, void* userData, bool isImage)
+    		: text(text), textLength(textLength), link(link), linkLength(linkLength), userData(userData), isImage(isImage)
+    	{}
     };
     
     struct MarkdownImageData
@@ -176,15 +181,23 @@ namespace ImGui
         const ImVec2            uv1 = ImVec2( 1, 1 );               // see ImGui::Image
         const ImVec4            tint_col = ImVec4( 1, 1, 1, 1 );    // see ImGui::Image
         const ImVec4            border_col = ImVec4( 0, 0, 0, 0 );  // see ImGui::Image
+        MarkdownImageData(bool isValid, bool useLinkCallback, ImTextureID user_texture_id, const ImVec2& size,
+            const ImVec2& uv0 = ImVec2(0, 0),
+            const ImVec2& uv1 = ImVec2(1, 1),
+            const ImVec4& tint_col = ImVec4(1, 1, 1, 1),
+            const ImVec4& border_col = ImVec4(0, 0, 0, 0))
+			: isValid(isValid), useLinkCallback(useLinkCallback), user_texture_id(user_texture_id), size(size),
+            uv0(uv0), uv1(uv1), tint_col(tint_col), border_col(border_col)
+    	{}
     };
 
     typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );
     typedef MarkdownImageData   MarkdownImageCallback( MarkdownLinkCallbackData data );
 
     struct MarkdownHeadingFormat
-    {   
-        ImFont*                 font;                               // ImGui font
-        bool                    separator;                          // if true, an underlined separator is drawn after the header
+    {
+        ImFont*                 font = nullptr;                            // ImGui font
+        bool                    separator = true;                          // if true, an underlined separator is drawn after the header
     };
 
     // Configuration struct for Markdown
@@ -195,11 +208,19 @@ namespace ImGui
     {
         static const int        NUMHEADINGS = 3;
 
-        MarkdownLinkCallback*   linkCallback = NULL;
-        MarkdownImageCallback*  imageCallback = NULL;
+        MarkdownLinkCallback*   linkCallback = nullptr;
+        MarkdownImageCallback*  imageCallback = nullptr;
         const char*             linkIcon = "";                      // icon displayd in link tooltip
-        MarkdownHeadingFormat   headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
-        void*                   userData = NULL;
+        MarkdownHeadingFormat   headingFormats[ NUMHEADINGS ] = { { nullptr, true }, { nullptr, true }, { nullptr, true } };
+        float                   headingScales[ NUMHEADINGS ] = { 1.2f, 1.1f, 1.05f };
+        void*                   userData = nullptr;
+        MarkdownConfig(
+            MarkdownLinkCallback* linkCallback = nullptr,
+            MarkdownImageCallback* imageCallback = nullptr,
+            const char* linkIcon = "",
+            void* userData = nullptr)
+	        : linkCallback(linkCallback), imageCallback(imageCallback), linkIcon(linkIcon), userData(userData)
+    	{}
     };
 
     //-----------------------------------------------------------------------------
@@ -350,20 +371,29 @@ namespace ImGui
         else if( line_.isHeading )          // render heading
         {
             MarkdownHeadingFormat fmt;
+            float scale = 1;
             if( line_.headingCount > mdConfig_.NUMHEADINGS )
             {
                 fmt = mdConfig_.headingFormats[ mdConfig_.NUMHEADINGS - 1 ];
+                scale = mdConfig_.headingScales[ mdConfig_.NUMHEADINGS - 1 ];
             }
             else
             {
                  fmt = mdConfig_.headingFormats[ line_.headingCount - 1 ];
+                 scale = mdConfig_.headingScales[ line_.headingCount - 1 ];
             }
 
             bool popFontRequired = false;
+            bool scaleFontRequired = false;
             if( fmt.font && fmt.font != ImGui::GetFont() )
             {
                 ImGui::PushFont( fmt.font );
                 popFontRequired = true;
+            }
+        	else if ( !fmt.font )
+            {
+                ImGui::SetWindowFontScale(scale);
+                scaleFontRequired = true;
             }
             const char* text = markdown_ + textStart + 1;
             ImGui::NewLine();
@@ -376,6 +406,10 @@ namespace ImGui
             if( popFontRequired )
             {
                 ImGui::PopFont();
+            }
+            if ( scaleFontRequired )
+            {
+                ImGui::SetWindowFontScale(1);
             }
         }
         else                                // render a normal paragraph chunk
@@ -502,7 +536,7 @@ namespace ImGui
                         bool useLinkCallback = false;
                         if( mdConfig_.imageCallback )
                         {
-                            MarkdownImageData imageData = mdConfig_.imageCallback({ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData });
+                            MarkdownImageData imageData = mdConfig_.imageCallback({ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true });
                             useLinkCallback = imageData.useLinkCallback;
                             if( imageData.isValid )
                             {
