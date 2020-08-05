@@ -198,6 +198,9 @@ namespace ImGui
     {
         ImFont*                 font = nullptr;                            // ImGui font
         bool                    separator = true;                          // if true, an underlined separator is drawn after the header
+        MarkdownHeadingFormat(ImFont* font = nullptr, bool separator = true)
+	        : font(font), separator(separator)
+    	{}
     };
 
     // Configuration struct for Markdown
