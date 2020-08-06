@@ -8,6 +8,8 @@ Support development of imgui_markdown through our [Patreon](https://www.patreon.
 
 A permissively licensed markdown single-header library for [Dear ImGui](https://github.com/ocornut/imgui).
 
+Currently requires C++14
+
 imgui_markdown currently supports the following markdown functionality:
 
   * Wrapped text
