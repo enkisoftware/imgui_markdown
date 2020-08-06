@@ -178,11 +178,11 @@ namespace ImGui
         bool                    isValid = false;                    // if true, will draw the image
         bool                    useLinkCallback = false;            // if true, linkCallback will be called when image is clicked
         ImTextureID             user_texture_id;                    // see ImGui::Image
-        const ImVec2            size;                               // see ImGui::Image
-        const ImVec2            uv0 = ImVec2( 0, 0 );               // see ImGui::Image
-        const ImVec2            uv1 = ImVec2( 1, 1 );               // see ImGui::Image
-        const ImVec4            tint_col = ImVec4( 1, 1, 1, 1 );    // see ImGui::Image
-        const ImVec4            border_col = ImVec4( 0, 0, 0, 0 );  // see ImGui::Image
+        const ImVec2&           size;                               // see ImGui::Image
+        const ImVec2&           uv0 = ImVec2( 0, 0 );               // see ImGui::Image
+        const ImVec2&           uv1 = ImVec2( 1, 1 );               // see ImGui::Image
+        const ImVec4&           tint_col = ImVec4( 1, 1, 1, 1 );    // see ImGui::Image
+        const ImVec4&           border_col = ImVec4( 0, 0, 0, 0 );  // see ImGui::Image
     };
 
     typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );    
@@ -524,7 +524,7 @@ namespace ImGui
                         bool useLinkCallback = false;
                         if( mdConfig_.imageCallback )
                         {
-                            MarkdownImageData imageData = mdConfig_.imageCallback({ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData });
+                            MarkdownImageData imageData = mdConfig_.imageCallback({ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true });
                             useLinkCallback = imageData.useLinkCallback;
                             if( imageData.isValid )
                             {
