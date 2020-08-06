@@ -22,8 +22,9 @@
 /*
 API BREAKING CHANGES
 ====================
+- 2020/04/22 - Added tooltipCallback parameter to ImGui::MarkdownConfig
 - 2019/02/01 - Changed LinkCallback parameters, see https://github.com/juliettef/imgui_markdown/issues/2
-- 2019/02/05 - Added ImageCallback parameter to ImGui::MarkdownConfig
+- 2019/02/05 - Added imageCallback parameter to ImGui::MarkdownConfig
 - 2019/02/06 - Added useLinkCallback member variable to MarkdownImageData to configure using images as links
 */
 
@@ -86,7 +87,7 @@ void LinkCallback( ImGui::MarkdownLinkCallbackData data_ );
 inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData data_ );
 
 // You can make your own Markdown function with your prefered string container and markdown config.
-static ImGui::MarkdownConfig mdConfig{ LinkCallback, ImageCallback, ICON_FA_LINK, { { NULL, true }, { NULL, true }, { NULL, false } } };
+static ImGui::MarkdownConfig mdConfig{ LinkCallback, NULL, ImageCallback, ICON_FA_LINK, { { NULL, true }, { NULL, true }, { NULL, false } }, NULL };
 
 void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
 {

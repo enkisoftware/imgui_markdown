@@ -82,7 +82,7 @@ void LinkCallback( ImGui::MarkdownLinkCallbackData data_ );
 inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData data_ );
 
 // You can make your own Markdown function with your prefered string container and markdown config.
-static ImGui::MarkdownConfig mdConfig{ LinkCallback, ImageCallback, ICON_FA_LINK, { { NULL, true }, { NULL, true }, { NULL, false } } };
+static ImGui::MarkdownConfig mdConfig{ LinkCallback, NULL, ImageCallback, ICON_FA_LINK, { { NULL, true }, { NULL, true }, { NULL, false } }, NULL };
 
 void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
 {
