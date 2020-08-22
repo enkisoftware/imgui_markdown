@@ -8,7 +8,7 @@ Support development of imgui_markdown through our [Patreon](https://www.patreon.
 
 A permissively licensed markdown single-header library for [Dear ImGui](https://github.com/ocornut/imgui).
 
-Currently requires C++14
+Requires C++11 or above
 
 imgui_markdown currently supports the following markdown functionality:
 
@@ -83,8 +83,9 @@ Normal text
 void LinkCallback( ImGui::MarkdownLinkCallbackData data_ );
 inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData data_ );
 
-// You can make your own Markdown function with your prefered string container and markdown config.
-static ImGui::MarkdownConfig mdConfig{ LinkCallback, NULL, ImageCallback, ICON_FA_LINK, { { NULL, true }, { NULL, true }, { NULL, false } }, NULL };
+static ImFont* H1 = NULL;
+static ImFont* H2 = NULL;
+static ImFont* H3 = NULL;
 
 void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
 {
@@ -99,7 +100,12 @@ inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData d
 {
     // In your application you would load an image based on data_ input. Here we just use the imgui font texture.
     ImTextureID image = ImGui::GetIO().Fonts->TexID;
-    ImGui::MarkdownImageData imageData{ true, false, image, ImVec2( 40.0f, 20.0f ) };
+    // > C++14 can use ImGui::MarkdownImageData imageData{ true, false, image, ImVec2( 40.0f, 20.0f ) };
+    MarkdownImageData imageData;
+    imageData.isValid =         true;
+    imageData.useLinkCallback = false;
+    imageData.user_texture_id = image;
+    imageData.size =            ImVec2( 40.0f, 20.0f );
     return imageData;
 }
 
@@ -110,16 +116,26 @@ void LoadFonts( float fontSize_ = 12.0f )
     // Base font
     io.Fonts->AddFontFromFileTTF( "myfont.ttf", fontSize_ );
     // Bold headings H2 and H3
-    mdConfig.headingFormats[ 1 ].font = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSize_ );
-    mdConfig.headingFormats[ 2 ].font = mdConfig.headingFormats[ 1 ].font;
+    H2 = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSize_ );
+    H3 = mdConfig.headingFormats[ 1 ].font;
     // bold heading H1
     float fontSizeH1 = fontSize_ * 1.1f;
-    mdConfig.headingFormats[ 0 ].font = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSizeH1 );
+    H1 = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSizeH1 );
 }
 
 void Markdown( const std::string& markdown_ )
 {
-    // fonts for, respectively, headings H1, H2, H3 and beyond
+    // You can make your own Markdown function with your prefered string container and markdown config.
+    // > C++14 can use ImGui::MarkdownConfig mdConfig{ LinkCallback, NULL, ImageCallback, ICON_FA_LINK, { { H1, true }, { H2, true }, { H3, false } }, NULL };
+    MarkdownConfig mdConfig; 
+    mdConfig.linkCallback =         LinkCallback;
+    mdConfig.tooltipCallback =      NULL;
+    mdConfig.imageCallback =        ImageCallback;
+    mdConfig.linkIcon =             ICON_FA_LINK;
+    mdConfig.headingFormats[0] =    { H1, true };
+    mdConfig.headingFormats[1] =    { H2, true };
+    mdConfig.headingFormats[2] =    { H3, false };
+    mdConfig.userData =             NULL;
     ImGui::Markdown( markdown_.c_str(), markdown_.length(), mdConfig );
 }
 
