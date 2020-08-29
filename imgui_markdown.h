@@ -56,14 +56,14 @@ Headers:
 
 Indents: 
 On a new line, at the start of the line, add two spaces per indent.
-贩Indent level 1
-贩贩Indent level 2
+路路Indent level 1
+路路路路Indent level 2
 
 Unordered lists: 
 On a new line, at the start of the line, add two spaces, an asterisks and a space. 
 For nested lists, add two additional spaces in front of the asterisk per list level increment.
-贩*稶nordered List level 1
-贩贩*稶nordered List level 2
+路路*路Unordered List level 1
+路路路路*路Unordered List level 2
 
 Links:
 [link description](https://...)
@@ -556,7 +556,7 @@ namespace ImGui
                         }
                         if( ImGui::IsItemHovered() )
                         {
-                            if( ImGui::IsMouseClicked( 0 ) && mdConfig_.linkCallback && useLinkCallback )
+                            if( ImGui::IsMouseReleased( 0 ) && mdConfig_.linkCallback && useLinkCallback )
                             {
                                 mdConfig_.linkCallback( { markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true } );
                             }
@@ -629,7 +629,7 @@ namespace ImGui
 
         if(bHovered)
         {
-            if(ImGui::IsMouseClicked( 0 ) && mdConfig_.linkCallback)
+            if(ImGui::IsMouseReleased( 0 ) && mdConfig_.linkCallback)
             {
                 mdConfig_.linkCallback( { markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false } );
             }
