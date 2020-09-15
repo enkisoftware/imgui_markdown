@@ -203,6 +203,22 @@ namespace ImGui
         ImVec4                  border_col = ImVec4( 0, 0, 0, 0 );  // see ImGui::Image
     };
 
+    enum class MarkdownFormatType
+    {
+         NORMAL_TEXT,
+         HEADING,
+         UNORDERED_LIST,
+         LINK,
+    };
+
+    struct MarkdownFormatInfo
+    {
+        MarkdownFormatType      type    = MarkdownFormatType::NORMAL_TEXT;
+        int32_t                 level   = 0;                               // Set for headings: 1 for H1, 2 for H2 etc.
+        bool                    itemHovered = false;                       // Currently only set for links when mouse hovered, only valid when start_ == false
+        const MarkdownConfig*   config  = NULL;
+    };
+
     typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );    
     typedef void                MarkdownTooltipCallback( MarkdownTooltipCallbackData data );
 
@@ -219,6 +235,9 @@ namespace ImGui
     }
 
     typedef MarkdownImageData   MarkdownImageCallback( MarkdownLinkCallbackData data );
+    typedef void                MarkdownFormalCallback( const MarkdownFormatInfo& markdownFormatInfo_, bool start_ );
+
+    inline void defaultMarkdownFormatCallback( const MarkdownFormatInfo& markdownFormatInfo_, bool start_ );
 
     struct MarkdownHeadingFormat
     {   
@@ -239,7 +258,8 @@ namespace ImGui
         MarkdownImageCallback*  imageCallback = NULL;
         const char*             linkIcon = "";                      // icon displayd in link tooltip
         MarkdownHeadingFormat   headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
-        void*                   userData = NULL;
+        void*                   userData = NULL;        
+        MarkdownFormalCallback* formatCallback = defaultMarkdownFormatCallback;
     };
 
     //-----------------------------------------------------------------------------
@@ -380,50 +400,34 @@ namespace ImGui
         }
 
         // render
+        MarkdownFormatInfo formatInfo;
+        formatInfo.config = &mdConfig_;
         int textStart = line_.lastRenderPosition + 1;
         int textSize = line_.lineEnd - textStart;
         if( line_.isUnorderedListStart )    // render unordered list
         {
+            formatInfo.type = MarkdownFormatType::UNORDERED_LIST;
+            mdConfig_.formatCallback( formatInfo, true );
             const char* text = markdown_ + textStart + 1;
             textRegion_.RenderListTextWrapped( text, text + textSize - 1 );
         }
         else if( line_.isHeading )          // render heading
         {
-            MarkdownHeadingFormat fmt;
-            if( line_.headingCount > mdConfig_.NUMHEADINGS )
-            {
-                fmt = mdConfig_.headingFormats[ mdConfig_.NUMHEADINGS - 1 ];
-            }
-            else
-            {
-                 fmt = mdConfig_.headingFormats[ line_.headingCount - 1 ];
-            }
-
-            bool popFontRequired = false;
-            if( fmt.font && fmt.font != ImGui::GetFont() )
-            {
-                ImGui::PushFont( fmt.font );
-                popFontRequired = true;
-            }
+            formatInfo.level = line_.headingCount;
+            formatInfo.type = MarkdownFormatType::HEADING;
+            mdConfig_.formatCallback( formatInfo, true );
             const char* text = markdown_ + textStart + 1;
-            ImGui::NewLine();
             textRegion_.RenderTextWrapped( text, text + textSize - 1 );
-            if( fmt.separator )
-            {
-                ImGui::Separator();
-            }
-            ImGui::NewLine();
-            if( popFontRequired )
-            {
-                ImGui::PopFont();
-            }
         }
         else                                // render a normal paragraph chunk
         {
+            formatInfo.type = MarkdownFormatType::NORMAL_TEXT;
+            mdConfig_.formatCallback( formatInfo, true );
             const char* text = markdown_ + textStart;
             textRegion_.RenderTextWrapped( text, text + textSize );
         }
-            
+        mdConfig_.formatCallback( formatInfo, false );
+
         // unindent
         for( int j = indentStart; j < line_.leadSpaceCount / 2; ++j )
         {
@@ -614,11 +618,14 @@ namespace ImGui
     inline bool TextRegion::RenderLinkText( const char* text_, const char* text_end_, const Link& link_, const ImGuiStyle& style_,
         const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_ )
     {
-        ImGui::PushStyleColor( ImGuiCol_Text, style_.Colors[ImGuiCol_ButtonHovered] );
+
+        MarkdownFormatInfo formatInfo;
+        formatInfo.config = &mdConfig_;
+        formatInfo.type = MarkdownFormatType::LINK;
+        mdConfig_.formatCallback( formatInfo, true );
         ImGui::PushTextWrapPos( -1.0f );
         ImGui::TextUnformatted( text_, text_end_ );
         ImGui::PopTextWrapPos();
-        ImGui::PopStyleColor();
 
         bool bThisItemHovered = ImGui::IsItemHovered();
         if(bThisItemHovered)
@@ -627,21 +634,19 @@ namespace ImGui
         }
         bool bHovered = bThisItemHovered || ( *linkHoverStart_ == ( markdown_ + link_.text.start ) );
 
+        formatInfo.itemHovered = bHovered;
+        mdConfig_.formatCallback( formatInfo, false );
+
         if(bHovered)
         {
             if(ImGui::IsMouseReleased( 0 ) && mdConfig_.linkCallback)
             {
                 mdConfig_.linkCallback( { markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false } );
             }
-            ImGui::UnderLine( style_.Colors[ImGuiCol_ButtonHovered] );
             if( mdConfig_.tooltipCallback )
             {
                 mdConfig_.tooltipCallback( {{ markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false }, mdConfig_.linkIcon } );
             }
-        }
-        else
-        {
-            ImGui::UnderLine( style_.Colors[ImGuiCol_Button] );
         }
         return bThisItemHovered;
     }
@@ -680,5 +685,70 @@ namespace ImGui
                 *linkHoverStart_ = NULL;
             }
         }
+
+    
+    inline void defaultMarkdownFormatCallback( const MarkdownFormatInfo& markdownFormatInfo_, bool start_ )
+    {
+        static bool popFontRequired = false;
+        static MarkdownHeadingFormat fmt;
+        switch( markdownFormatInfo_.type )
+        {
+        case MarkdownFormatType::NORMAL_TEXT:
+            break;
+        case MarkdownFormatType::HEADING:            
+            if( start_ )
+            {
+                if( markdownFormatInfo_.level > MarkdownConfig::NUMHEADINGS )
+                {
+                    fmt = markdownFormatInfo_.config->headingFormats[ MarkdownConfig::NUMHEADINGS - 1 ];
+                }
+                else
+                {
+                    fmt = markdownFormatInfo_.config->headingFormats[ markdownFormatInfo_.level - 1 ];
+                }
+                popFontRequired = false;
+                if( fmt.font && fmt.font != ImGui::GetFont() )
+                {
+                    ImGui::PushFont( fmt.font );
+                    popFontRequired = true;
+                }
+                ImGui::NewLine();
+            }
+            else
+            {
+                if( fmt.separator )
+                {
+                    ImGui::Separator();
+                }
+                ImGui::NewLine();
+                if( popFontRequired )           // Might have used default formatting of heading font
+                {
+                    ImGui::PopFont();
+                }
+            }
+            break;
+        case MarkdownFormatType::UNORDERED_LIST:
+            break;
+        case MarkdownFormatType::LINK:
+            if( start_ )
+            {
+                ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] );
+            }
+            else
+            {
+                ImGui::PopStyleColor();
+                if( markdownFormatInfo_.itemHovered )
+                {
+                    ImGui::UnderLine( ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] );
+                }
+                else
+                {
+                    ImGui::UnderLine( ImGui::GetStyle().Colors[ImGuiCol_Button] );
+                }
+            }
+            break;
+        }
+    }
+
 }
 
