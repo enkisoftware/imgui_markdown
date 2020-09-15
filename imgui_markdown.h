@@ -34,7 +34,7 @@ Markdown for Dear ImGui
 
 A permissively licensed markdown single-header library for https://github.com/ocornut/imgui
 
-Currently requires C++14
+Currently requires C++11 or above
 
 imgui_markdown currently supports the following markdown functionality:
  - Wrapped text
