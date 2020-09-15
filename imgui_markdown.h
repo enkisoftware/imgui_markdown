@@ -689,28 +689,27 @@ namespace ImGui
     
     inline void defaultMarkdownFormatCallback( const MarkdownFormatInfo& markdownFormatInfo_, bool start_ )
     {
-        static bool popFontRequired = false;
-        static MarkdownHeadingFormat fmt;
         switch( markdownFormatInfo_.type )
         {
         case MarkdownFormatType::NORMAL_TEXT:
             break;
-        case MarkdownFormatType::HEADING:            
+        case MarkdownFormatType::HEADING:
+        {
+            MarkdownHeadingFormat fmt;
+            if( markdownFormatInfo_.level > MarkdownConfig::NUMHEADINGS )
+            {
+                fmt = markdownFormatInfo_.config->headingFormats[ MarkdownConfig::NUMHEADINGS - 1 ];
+            }
+            else
+            {
+                fmt = markdownFormatInfo_.config->headingFormats[ markdownFormatInfo_.level - 1 ];
+            }
             if( start_ )
             {
-                if( markdownFormatInfo_.level > MarkdownConfig::NUMHEADINGS )
-                {
-                    fmt = markdownFormatInfo_.config->headingFormats[ MarkdownConfig::NUMHEADINGS - 1 ];
-                }
-                else
-                {
-                    fmt = markdownFormatInfo_.config->headingFormats[ markdownFormatInfo_.level - 1 ];
-                }
-                popFontRequired = false;
-                if( fmt.font && fmt.font != ImGui::GetFont() )
+
+                if( fmt.font  )
                 {
                     ImGui::PushFont( fmt.font );
-                    popFontRequired = true;
                 }
                 ImGui::NewLine();
             }
@@ -721,12 +720,13 @@ namespace ImGui
                     ImGui::Separator();
                 }
                 ImGui::NewLine();
-                if( popFontRequired )           // Might have used default formatting of heading font
+                if( fmt.font )
                 {
                     ImGui::PopFont();
                 }
             }
             break;
+        }
         case MarkdownFormatType::UNORDERED_LIST:
             break;
         case MarkdownFormatType::LINK:
