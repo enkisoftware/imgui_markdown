@@ -123,6 +123,38 @@ void LoadFonts( float fontSize_ = 12.0f )
     H1 = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSizeH1 );
 }
 
+void ExampleMarkdownFormatCallback( const MarkdownFormatInfo& markdownFormatInfo_, bool start_ )
+{
+    // Call the default first so any settings can be overwritten by our implementation.
+    // Alternatively could be called or not called in a switch statement on a case by case basis.
+    // See defaultMarkdownFormatCallback definition for furhter examples of how to use it.
+    ImGui::defaultMarkdownFormatCallback( markdownFormatInfo_, start_ );        
+       
+    switch( markdownFormatInfo_.type )
+    {
+    // example: change the colour of heading level 2
+    case MarkdownFormatType::HEADING:
+    {
+        if( markdownFormatInfo_.level == 2 )
+        {
+            if( start_ )
+            {
+                ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] );
+            }
+            else
+            {
+                ImGui::PopStyleColor();
+            }
+        }
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+}
+
 void Markdown( const std::string& markdown_ )
 {
     // You can make your own Markdown function with your prefered string container and markdown config.
@@ -136,6 +168,7 @@ void Markdown( const std::string& markdown_ )
     mdConfig.headingFormats[1] =    { H2, true };
     mdConfig.headingFormats[2] =    { H3, false };
     mdConfig.userData =             NULL;
+    mdConfig.formatCallback =       ExampleMarkdownFormatCallback;
     ImGui::Markdown( markdown_.c_str(), markdown_.length(), mdConfig );
 }
 
