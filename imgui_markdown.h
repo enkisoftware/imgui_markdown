@@ -92,6 +92,9 @@ static ImFont* H1 = NULL;
 static ImFont* H2 = NULL;
 static ImFont* H3 = NULL;
 
+static ImGui::MarkdownConfig mdConfig; 
+
+
 void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
 {
     std::string url( data_.link, data_.linkLength );
@@ -106,7 +109,7 @@ inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData d
     // In your application you would load an image based on data_ input. Here we just use the imgui font texture.
     ImTextureID image = ImGui::GetIO().Fonts->TexID;
     // > C++14 can use ImGui::MarkdownImageData imageData{ true, false, image, ImVec2( 40.0f, 20.0f ) };
-    MarkdownImageData imageData;
+    ImGui::MarkdownImageData imageData;
     imageData.isValid =         true;
     imageData.useLinkCallback = false;
     imageData.user_texture_id = image;
@@ -128,7 +131,7 @@ void LoadFonts( float fontSize_ = 12.0f )
     H1 = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSizeH1 );
 }
 
-void ExampleMarkdownFormatCallback( const MarkdownFormatInfo& markdownFormatInfo_, bool start_ )
+void ExampleMarkdownFormatCallback( const ImGui::MarkdownFormatInfo& markdownFormatInfo_, bool start_ )
 {
     // Call the default first so any settings can be overwritten by our implementation.
     // Alternatively could be called or not called in a switch statement on a case by case basis.
@@ -138,7 +141,7 @@ void ExampleMarkdownFormatCallback( const MarkdownFormatInfo& markdownFormatInfo
     switch( markdownFormatInfo_.type )
     {
     // example: change the colour of heading level 2
-    case MarkdownFormatType::HEADING:
+    case ImGui::MarkdownFormatType::HEADING:
     {
         if( markdownFormatInfo_.level == 2 )
         {
@@ -164,7 +167,6 @@ void Markdown( const std::string& markdown_ )
 {
     // You can make your own Markdown function with your prefered string container and markdown config.
     // > C++14 can use ImGui::MarkdownConfig mdConfig{ LinkCallback, NULL, ImageCallback, ICON_FA_LINK, { { H1, true }, { H2, true }, { H3, false } }, NULL };
-    MarkdownConfig mdConfig; 
     mdConfig.linkCallback =         LinkCallback;
     mdConfig.tooltipCallback =      NULL;
     mdConfig.imageCallback =        ImageCallback;
