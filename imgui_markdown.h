@@ -406,6 +406,7 @@ namespace ImGui
             HAS_SQUARE_BRACKET_OPEN,
             HAS_SQUARE_BRACKETS,
             HAS_SQUARE_BRACKETS_ROUND_BRACKET_OPEN,
+            IS_INLINE_LINK,
         };
         LinkState state = NO_LINK;
         TextBlock text;
@@ -550,6 +551,15 @@ namespace ImGui
                         link.isImage = true;
                     }
                 }
+                // If we see text starting with "http://" or "https://", we have a link embedded in the text
+                else if( c == 'h' && 
+                    ( strncmp( &markdown_[i], "http://", 7 ) == 0 || strncmp( &markdown_[i], "https://", 8 ) == 0 )
+                    )
+                {
+                    link.state = Link::IS_INLINE_LINK;
+                    link.text.start = i;
+                    link.url.start = i;
+                }
                 break;
             case Link::HAS_SQUARE_BRACKET_OPEN:
                 if( c == ']' )
@@ -615,6 +625,26 @@ namespace ImGui
                     line.lastRenderPosition = i;
                     break;
                 }
+            case Link::IS_INLINE_LINK:
+                // If we've reached whitespace, then the URL was done at the previous character
+                if( c == ' ' || c == '\t' || c == '\n' )
+                {
+                    link.text.stop = i;
+                    link.url.stop = i;
+
+                    // render previous line content
+                    line.lineEnd = link.text.start;
+                    RenderLine( markdown_, line, textRegion, mdConfig_ );
+                    line.leadSpaceCount = 0;
+                    line.isUnorderedListStart = false;    // the following text shouldn't have bullets
+                    ImGui::SameLine( 0.0f, 0.0f );
+                    textRegion.RenderLinkTextWrapped( markdown_ + link.text.start, markdown_ + link.text.start + link.text.size(), link, style, markdown_, mdConfig_, &linkHoverStart, false );
+                    ImGui::SameLine( 0.0f, 0.0f );
+                    // reset the link by reinitializing it
+                    link = Link();
+                    line.lastRenderPosition = i - 1;
+                }
+                break;
             }
 
             // handle end of line (render)
