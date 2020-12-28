@@ -585,7 +585,15 @@ namespace ImGui
                             useLinkCallback = imageData.useLinkCallback;
                             if( imageData.isValid )
                             {
-                                ImGui::Image( imageData.user_texture_id, imageData.size, imageData.uv0, imageData.uv1, imageData.tint_col, imageData.border_col );
+                                ImVec2 const contentSize = ImGui::GetContentRegionAvail();
+                                ImVec2 usedSize = imageData.size;
+                                if ( usedSize.x > contentSize.x )
+                                {
+                                    float const ratio = usedSize.y/usedSize.x;
+                                    usedSize.x = contentSize.x;
+                                    usedSize.y = contentSize.x*ratio;
+                                }
+                                ImGui::Image( imageData.user_texture_id, usedSize, imageData.uv0, imageData.uv1, imageData.tint_col, imageData.border_col );
                                 drawnImage = true;
                             }
                         }
