@@ -587,7 +587,7 @@ namespace ImGui
                             {
                                 ImVec2 const contentSize = ImGui::GetContentRegionAvail();
                                 ImVec2 usedSize = imageData.size;
-                                if ( usedSize.x > contentSize.x )
+                                if( usedSize.x > contentSize.x )
                                 {
                                     float const ratio = usedSize.y/usedSize.x;
                                     usedSize.x = contentSize.x;
