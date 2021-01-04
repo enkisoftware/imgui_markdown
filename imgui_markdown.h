@@ -230,6 +230,7 @@ namespace ImGui
     {
         bool                    isValid = false;                    // if true, will draw the image
         bool                    useLinkCallback = false;            // if true, linkCallback will be called when image is clicked
+        bool                    resizeIfNeeded = false;             // if true, will resize the image to fit in the current ImWindow
         ImTextureID             user_texture_id = 0;                // see ImGui::Image
         ImVec2                  size = ImVec2( 100.0f, 100.0f );    // see ImGui::Image
         ImVec2                  uv0 = ImVec2( 0, 0 );               // see ImGui::Image
@@ -587,7 +588,7 @@ namespace ImGui
                             {
                                 ImVec2 const contentSize = ImGui::GetContentRegionAvail();
                                 ImVec2 usedSize = imageData.size;
-                                if( usedSize.x > contentSize.x )
+                                if( imageData.resizeIfNeeded && usedSize.x > contentSize.x )
                                 {
                                     float const ratio = usedSize.y/usedSize.x;
                                     usedSize.x = contentSize.x;
