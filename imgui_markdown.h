@@ -114,6 +114,16 @@ inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData d
     imageData.useLinkCallback = false;
     imageData.user_texture_id = image;
     imageData.size =            ImVec2( 40.0f, 20.0f );
+    
+    // For image resize when available size.x > image width, add
+    ImVec2 const contentSize = ImGui::GetContentRegionAvail();
+    if( imageData.size.x > contentSize.x )
+    {
+        float const ratio = imageData.size.y/imageData.size.x;
+        imageData.size.x = contentSize.x;
+        imageData.size.y = contentSize.x*ratio;
+    }
+
     return imageData;
 }
 

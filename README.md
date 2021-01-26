@@ -109,6 +109,16 @@ inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData d
     imageData.useLinkCallback = false;
     imageData.user_texture_id = image;
     imageData.size =            ImVec2( 40.0f, 20.0f );
+
+    // For image resize when available size.x > image width, add
+    ImVec2 const contentSize = ImGui::GetContentRegionAvail();
+    if( imageData.size.x > contentSize.x )
+    {
+        float const ratio = imageData.size.y/imageData.size.x;
+        imageData.size.x = contentSize.x;
+        imageData.size.y = contentSize.x*ratio;
+    }
+
     return imageData;
 }
 
@@ -230,8 +240,9 @@ Using imgui_markdown as help viewer for Visual 6502 Remix with internal and exte
 ## Credits
 
 Design and implementation - [Doug Binks](http://www.enkisoftware.com/about.html#doug) - [@dougbinks](https://github.com/dougbinks)  
-Implementation and maintenance - [Juliette Foucaut](http://www.enkisoftware.com/about.html#juliette) - [@juliettef](https://github.com/juliettef)  
-Thanks to [Omar Cornut for Dear ImGui](https://github.com/ocornut/imgui).
+Implementation and maintenance - [Juliette Foucaut](http://www.enkisoftware.com/about.html#juliette) - [@juliettef](https://github.com/juliettef)
+[Image resize](https://github.com/juliettef/imgui_markdown/pull/15) example code - [Soufiane Khiat](https://github.com/soufianekhiat)
+Thanks to [Omar Cornut for Dear ImGui](https://github.com/ocornut/imgui)
 
 ## License (zlib)
 
