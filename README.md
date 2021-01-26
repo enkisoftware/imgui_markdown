@@ -240,9 +240,9 @@ Using imgui_markdown as help viewer for Visual 6502 Remix with internal and exte
 ## Credits
 
 Design and implementation - [Doug Binks](http://www.enkisoftware.com/about.html#doug) - [@dougbinks](https://github.com/dougbinks)  
-Implementation and maintenance - [Juliette Foucaut](http://www.enkisoftware.com/about.html#juliette) - [@juliettef](https://github.com/juliettef)
-[Image resize](https://github.com/juliettef/imgui_markdown/pull/15) example code - [Soufiane Khiat](https://github.com/soufianekhiat)
-Thanks to [Omar Cornut for Dear ImGui](https://github.com/ocornut/imgui)
+Implementation and maintenance - [Juliette Foucaut](http://www.enkisoftware.com/about.html#juliette) - [@juliettef](https://github.com/juliettef)  
+[Image resize](https://github.com/juliettef/imgui_markdown/pull/15) example code - [Soufiane Khiat](https://github.com/soufianekhiat)  
+Thanks to [Omar Cornut for Dear ImGui](https://github.com/ocornut/imgui)  
 
 ## License (zlib)
 
