@@ -336,9 +336,8 @@ namespace ImGui
         // so to work around this we render using our own wrapping for the first line
         void RenderTextWrapped( const char* text_, const char* text_end_, bool bIndentToHere_ = false )
         {
-            const float scale = 1.0f;
             float       widthLeft = GetContentRegionAvail().x;
-            const char* endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+            const char* endLine = ImGui::GetFont()->CalcWordWrapPositionA( ImGui::GetIO().FontGlobalScale, text_, text_end_, widthLeft );
             ImGui::TextUnformatted( text_, endLine );
             if( bIndentToHere_ )
             {
@@ -354,7 +353,7 @@ namespace ImGui
             {
                 text_ = endLine;
                 if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
-                endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+                endLine = ImGui::GetFont()->CalcWordWrapPositionA( ImGui::GetIO().FontGlobalScale, text_, text_end_, widthLeft );
                 if( text_ == endLine ) 
                 {
                     endLine++;
@@ -699,9 +698,8 @@ namespace ImGui
     inline void TextRegion::RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_, const ImGuiStyle& style_,
         const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_, bool bIndentToHere_ )
         {
-            const float scale = 1.0f;
             float       widthLeft = GetContentRegionAvail().x;
-            const char* endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+            const char* endLine = ImGui::GetFont()->CalcWordWrapPositionA( ImGui::GetIO().FontGlobalScale, text_, text_end_, widthLeft );
             bool bHovered = RenderLinkText( text_, endLine, link_, style_, markdown_, mdConfig_, linkHoverStart_ );
             if( bIndentToHere_ )
             {
@@ -717,7 +715,7 @@ namespace ImGui
             {
                 text_ = endLine;
                 if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
-                endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+                endLine = ImGui::GetFont()->CalcWordWrapPositionA( ImGui::GetIO().FontGlobalScale, text_, text_end_, widthLeft );
                 if( text_ == endLine ) 
                 {
                     endLine++;
