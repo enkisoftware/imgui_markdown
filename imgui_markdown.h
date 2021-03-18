@@ -667,21 +667,25 @@ namespace ImGui
                 }
             }
 
+            
 			switch (em.state)
 			{
 			case Emphasis::NONE:
-				if (c == '*' || c == '_') {
 
-					line.lineEnd = i;
-					RenderLine(markdown_, line, textRegion, mdConfig_);
-					ImGui::SameLine(0.0f, 0.0f);
-					line.lastRenderPosition = i;
-                    line.isEmphasis = true;
+				if (link.state == Link::NO_LINK) {
+					if (c == '*' || c == '_') {
 
-					em.state = Emphasis::LEFT;
-					em.sym = c;
-                    line.emphasisCount = 1;
-					continue;
+						line.lineEnd = i;
+						RenderLine(markdown_, line, textRegion, mdConfig_);
+						ImGui::SameLine(0.0f, 0.0f);
+						line.lastRenderPosition = i;
+						line.isEmphasis = true;
+
+						em.state = Emphasis::LEFT;
+						em.sym = c;
+						line.emphasisCount = 1;
+						continue;
+					}
 				}
 				break;
 			case Emphasis::LEFT:
@@ -690,7 +694,7 @@ namespace ImGui
 					continue;
 				} else {
 
-                    line.lastRenderPosition = i - 1;
+					line.lastRenderPosition = i - 1;
 					em.state = Emphasis::MIDDLE;
 				}
 				break;
@@ -707,16 +711,16 @@ namespace ImGui
 				} else if (i < em.end + line.emphasisCount) {
 					em.state = Emphasis::MIDDLE;
 				} else {
-                    
+
 					line.lineEnd = i - line.emphasisCount;
 					RenderLine(markdown_, line, textRegion, mdConfig_);
 
-                    line.isEmphasis = false;
+					line.isEmphasis = false;
 
 					ImGui::SameLine(0.0f, 0.0f);
-					line.lastRenderPosition = i-1;
+					line.lastRenderPosition = i - 1;
 
-                    em.state = Emphasis::NONE;
+					em.state = Emphasis::NONE;
 				}
 				break;
 			}
@@ -732,6 +736,7 @@ namespace ImGui
                     ImGui::Separator();
                     ImGui::SameLine(0.0f, 0.0f);
                     em.state = Emphasis::NONE;
+                    line.isEmphasis = false;
                 } else {
                     RenderLine(markdown_, line, textRegion, mdConfig_);
                 }
@@ -890,15 +895,17 @@ namespace ImGui
                 {
                     ImGui::PushFont( fmt.font );
                 }
-                ImGui::NewLine();
+               // ImGui::NewLine();
             }
             else
             {
                 if( fmt.separator )
                 {
                     ImGui::Separator();
+                } else {
+                    ImGui::NewLine();
                 }
-                ImGui::NewLine();
+                
                 if( fmt.font )
                 {
                     ImGui::PopFont();
