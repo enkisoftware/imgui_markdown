@@ -1,5 +1,5 @@
 #pragma once
-
+#include "imgui.h"
 // License: zlib
 // Copyright (c) 2019 Juliette Foucaut & Doug Binks
 // 
@@ -254,6 +254,7 @@ namespace ImGui
          HEADING,
          UNORDERED_LIST,
          LINK,
+         EMPHASIS,
     };
 
     struct MarkdownFormatInfo
@@ -392,10 +393,12 @@ namespace ImGui
     // Text that starts after a new line (or at beginning) and ends with a newline (or at end)
     struct Line {
         bool isHeading = false;
+        bool isEmphasis = false;
         bool isUnorderedListStart = false;
         bool isLeadingSpace = true;     // spaces at start of line
         int  leadSpaceCount = 0;
         int  headingCount = 0;
+        int  emphasisCount = 0;
         int  lineStart = 0;
         int  lineEnd   = 0;
         int  lastRenderPosition = 0;     // lines may get rendered in multiple pieces
@@ -422,6 +425,19 @@ namespace ImGui
         TextBlock url;
         bool isImage = false;
     };
+
+	struct Emphasis {
+		enum EmphasisState {
+			NONE,
+			LEFT,
+			MIDDLE,
+			RIGHT,
+		};
+        EmphasisState state = NONE;
+
+        char sym;
+        int end;
+	};
 
     inline void UnderLine( ImColor col_ )
     {
@@ -464,6 +480,17 @@ namespace ImGui
             const char* text = markdown_ + textStart + 1;
             textRegion_.RenderTextWrapped( text, text + textSize - 1 );
         }
+
+		else if (line_.isEmphasis)          // render emphasis
+		{
+			formatInfo.level = line_.emphasisCount;
+			formatInfo.type = MarkdownFormatType::EMPHASIS;
+			mdConfig_.formatCallback(formatInfo, true);
+			const char* text = markdown_ + textStart;
+			textRegion_.RenderTextWrapped(text, text + textSize);
+		}
+        
+
         else                                // render a normal paragraph chunk
         {
             formatInfo.type = MarkdownFormatType::NORMAL_TEXT;
@@ -489,11 +516,22 @@ namespace ImGui
         Link        link;
         TextRegion  textRegion;
 
+        Emphasis    em;
+
+		bool isEscape = false;
+
+
         char c = 0;
         for( int i=0; i < (int)markdownLength_; ++i )
         {
             c = markdown_[i];               // get the character at index
             if( c == 0 ) { break; }         // shouldn't happen but don't go beyond 0.
+
+            if (isEscape)
+            {
+                isEscape=false;
+                continue;
+            }
 
             // If we're at the beginning of the line, count any spaces
             if( line.isLeadingSpace )
@@ -521,7 +559,7 @@ namespace ImGui
                     {
                         line.headingCount++;
                         bool bContinueChecking = true;
-                        uint32_t j = i;
+                        int j = i;
                         while( ++j < (int)markdownLength_ && bContinueChecking )
                         {
                             c = markdown_[j];
@@ -547,6 +585,8 @@ namespace ImGui
                 }
             }
 
+           
+            
             // Test to see if we have a link
             switch( link.state )
             {
@@ -627,15 +667,82 @@ namespace ImGui
                 }
             }
 
+			switch (em.state)
+			{
+			case Emphasis::NONE:
+				if (c == '*' || c == '_') {
+
+					line.lineEnd = i;
+					RenderLine(markdown_, line, textRegion, mdConfig_);
+					ImGui::SameLine(0.0f, 0.0f);
+					line.lastRenderPosition = i;
+                    line.isEmphasis = true;
+
+					em.state = Emphasis::LEFT;
+					em.sym = c;
+                    line.emphasisCount = 1;
+					continue;
+				}
+				break;
+			case Emphasis::LEFT:
+				if (em.sym == c && line.emphasisCount < 3) {
+					++line.emphasisCount;
+					continue;
+				} else {
+
+                    line.lastRenderPosition = i - 1;
+					em.state = Emphasis::MIDDLE;
+				}
+				break;
+			case Emphasis::MIDDLE:
+				if (em.sym == c) {
+					em.state = Emphasis::RIGHT;
+					em.end = i;
+					continue;
+				}
+				break;
+			case Emphasis::RIGHT:
+				if (em.sym == c) {
+					continue;
+				} else if (i < em.end + line.emphasisCount) {
+					em.state = Emphasis::MIDDLE;
+				} else {
+                    
+					line.lineEnd = i - line.emphasisCount;
+					RenderLine(markdown_, line, textRegion, mdConfig_);
+
+                    line.isEmphasis = false;
+
+					ImGui::SameLine(0.0f, 0.0f);
+					line.lastRenderPosition = i-1;
+
+                    em.state = Emphasis::NONE;
+				}
+				break;
+			}
+
             // handle end of line (render)
             if( c == '\n' )
             {
                 // render the line
                 line.lineEnd = i;
-                RenderLine( markdown_, line, textRegion, mdConfig_ );
+                if (em.state == Emphasis::MIDDLE && line.emphasisCount>=3 &&
+                    line.lineStart+ line.emphasisCount== i)
+                {
+                    ImGui::Separator();
+                    ImGui::SameLine(0.0f, 0.0f);
+                    em.state = Emphasis::NONE;
+                } else {
+                    RenderLine(markdown_, line, textRegion, mdConfig_);
+                }
 
-                // reset the line
-                line = Line();
+                // reset the line but preserve emphasis state
+                int  emphasisCount = line.emphasisCount;
+                bool isEmphasis = line.isEmphasis;
+				line = Line();
+                line.emphasisCount = emphasisCount;
+                line.isEmphasis= isEmphasis;
+
                 line.lineStart = i + 1;
                 line.lastRenderPosition = i;
 
@@ -643,7 +750,15 @@ namespace ImGui
                 
                 // reset the link
                 link = Link();
-            }
+            }else if (c == '\\')
+			{
+				line.lineEnd = i;
+				RenderLine(markdown_, line, textRegion, mdConfig_);
+                ImGui::SameLine(0.0f, 0.0f);
+				line.lastRenderPosition = i;
+
+				isEscape = true;
+			}
         }
 
         // render any remaining text if last char wasn't 0
@@ -660,7 +775,7 @@ namespace ImGui
     }
 
 
-    inline bool TextRegion::RenderLinkText( const char* text_, const char* text_end_, const Link& link_, const ImGuiStyle& style_,
+    inline bool TextRegion::RenderLinkText( const char* text_, const char* text_end_, const Link& link_, const ImGuiStyle&/* style_*/,
         const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_ )
     {
 
@@ -738,6 +853,25 @@ namespace ImGui
         {
         case MarkdownFormatType::NORMAL_TEXT:
             break;
+		case MarkdownFormatType::EMPHASIS:
+        {
+            MarkdownHeadingFormat fmt;
+            fmt = markdownFormatInfo_.config->headingFormats[MarkdownConfig::NUMHEADINGS - 1];
+			if (start_)
+			{
+				if (fmt.font)
+				{
+					ImGui::PushFont(fmt.font);
+				}
+			} else
+			{
+				if (fmt.font)
+				{
+					ImGui::PopFont();
+				}
+			}
+            break;
+        }
         case MarkdownFormatType::HEADING:
         {
             MarkdownHeadingFormat fmt;
