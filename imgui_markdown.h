@@ -424,6 +424,7 @@ namespace ImGui
         TextBlock text;
         TextBlock url;
         bool isImage = false;
+        int num_brackets_open = 0;
     };
 
 	struct Emphasis {
@@ -613,10 +614,13 @@ namespace ImGui
                 {
                     link.state = Link::HAS_SQUARE_BRACKETS_ROUND_BRACKET_OPEN;
                     link.url.start = i + 1;
+                    link.num_brackets_open = 1;
                 }
                 break;
             case Link::HAS_SQUARE_BRACKETS_ROUND_BRACKET_OPEN:
-                if( c == ')' )
+                if (c == '(')++link.num_brackets_open;
+                else if (c == ')')--link.num_brackets_open;
+                if(link.num_brackets_open==0)
                 {
                     // render previous line content
                     line.lineEnd = link.text.start - ( link.isImage ? 2 : 1 );
@@ -895,13 +899,18 @@ namespace ImGui
                 {
                     ImGui::PushFont( fmt.font );
                 }
-               // ImGui::NewLine();
+#ifndef IMGUI_MARKDOWN_LESS_NEWLINES
+                ImGui::NewLine();
+#endif
             }
             else
             {
                 if( fmt.separator )
                 {
                     ImGui::Separator();
+#ifndef IMGUI_MARKDOWN_LESS_NEWLINES
+                    ImGui::NewLine();
+#endif
                 } else {
                     ImGui::NewLine();
                 }
