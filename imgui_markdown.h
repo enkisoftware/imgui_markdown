@@ -674,7 +674,6 @@ namespace ImGui
 			switch( em.state )
 			{
 			case Emphasis::NONE:
-
 				if( link.state == Link::NO_LINK )
                 {
 					if( c == '*' || c == '_' ) {
@@ -710,28 +709,31 @@ namespace ImGui
                 {
 					em.state = Emphasis::RIGHT;
 					em.end = i;
-					continue;
+                   // pass through to case Emphasis::RIGHT
 				}
-				break;
+                else
+                {
+                    break;
+                }
 			case Emphasis::RIGHT:
 				if( em.sym == c )
                 {
-					continue;
+					if( i - em.end + 1 == line.emphasisCount )
+                    {
+					    line.lineEnd = em.end;
+					    RenderLine( markdown_, line, textRegion, mdConfig_ );
+					    ImGui::SameLine( 0.0f, 0.0f );
+					    line.isEmphasis = false;
+					    line.lastRenderPosition = i;
+					    em.state = Emphasis::NONE;
+                    }
+                    continue;
 				} 
                 else
                 {
                     if( i < em.end + line.emphasisCount )
                     {
 					    em.state = Emphasis::MIDDLE;
-				    }
-                    else
-                    {
-					    line.lineEnd = i - line.emphasisCount;
-					    RenderLine( markdown_, line, textRegion, mdConfig_ );
-					    ImGui::SameLine( 0.0f, 0.0f );
-					    line.isEmphasis = false;
-					    line.lastRenderPosition = i - 1;
-					    em.state = Emphasis::NONE;
 				    }
                 }
 				break;
@@ -798,7 +800,6 @@ namespace ImGui
     inline bool TextRegion::RenderLinkText( const char* text_, const char* text_end_, const Link& link_,
         const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_ )
     {
-
         MarkdownFormatInfo formatInfo;
         formatInfo.config = &mdConfig_;
         formatInfo.type = MarkdownFormatType::LINK;
