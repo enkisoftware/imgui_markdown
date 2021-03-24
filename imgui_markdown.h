@@ -371,10 +371,10 @@ namespace ImGui
             RenderTextWrapped( text_, text_end_, true );
         }
 
-        bool RenderLinkText( const char* text_, const char* text_end_, const Link& link_, const ImGuiStyle& style_, 
+        bool RenderLinkText( const char* text_, const char* text_end_, const Link& link_, 
             const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_ );
 
-        void RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_, const ImGuiStyle& style_,
+        void RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_,
             const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_, bool bIndentToHere_ = false );
 
         void ResetIndent()
@@ -661,7 +661,7 @@ namespace ImGui
                     }
                     else                 // it's a link, render it.
                     {
-                        textRegion.RenderLinkTextWrapped( markdown_ + link.text.start, markdown_ + link.text.start + link.text.size(), link, style, markdown_, mdConfig_, &linkHoverStart, false );
+                        textRegion.RenderLinkTextWrapped( markdown_ + link.text.start, markdown_ + link.text.start + link.text.size(), link, markdown_, mdConfig_, &linkHoverStart, false );
                     }
                     ImGui::SameLine( 0.0f, 0.0f );
                     // reset the link by reinitializing it
@@ -783,8 +783,7 @@ namespace ImGui
         }
     }
 
-
-    inline bool TextRegion::RenderLinkText( const char* text_, const char* text_end_, const Link& link_, const ImGuiStyle&/* style_*/,
+    inline bool TextRegion::RenderLinkText( const char* text_, const char* text_end_, const Link& link_,
         const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_ )
     {
 
@@ -820,13 +819,13 @@ namespace ImGui
         return bThisItemHovered;
     }
 
-    inline void TextRegion::RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_, const ImGuiStyle& style_,
+    inline void TextRegion::RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_,
         const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_, bool bIndentToHere_ )
         {
             float       scale = ImGui::GetIO().FontGlobalScale;
             float       widthLeft = GetContentRegionAvail().x;
             const char* endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
-            bool bHovered = RenderLinkText( text_, endLine, link_, style_, markdown_, mdConfig_, linkHoverStart_ );
+            bool bHovered = RenderLinkText( text_, endLine, link_, markdown_, mdConfig_, linkHoverStart_ );
             if( bIndentToHere_ )
             {
                 float indentNeeded = GetContentRegionAvail().x - widthLeft;
@@ -846,7 +845,7 @@ namespace ImGui
                 {
                     endLine++;
                 }
-                bool bThisLineHovered = RenderLinkText( text_, endLine, link_, style_, markdown_, mdConfig_, linkHoverStart_ );
+                bool bThisLineHovered = RenderLinkText( text_, endLine, link_, markdown_, mdConfig_, linkHoverStart_ );
                 bHovered = bHovered || bThisLineHovered;
             }
             if( !bHovered && *linkHoverStart_ == markdown_ + link_.text.start )
