@@ -435,9 +435,8 @@ namespace ImGui
 			RIGHT,
 		};
         EmphasisState state = NONE;
-
+        TextBlock text;
         char sym;
-        int end;
 	};
 
     inline void UnderLine( ImColor col_ )
@@ -482,7 +481,7 @@ namespace ImGui
             textRegion_.RenderTextWrapped( text, text + textSize - 1 );
         }
 
-		else if (line_.isEmphasis)          // render emphasis
+		else if( line_.isEmphasis )         // render emphasis
 		{
 			formatInfo.level = line_.emphasisCount;
 			formatInfo.type = MarkdownFormatType::EMPHASIS;
@@ -516,7 +515,6 @@ namespace ImGui
         Line        line;
         Link        link;
         Emphasis    em;
-		bool        isEscape = false;
         TextRegion  textRegion;
 
 
@@ -526,12 +524,6 @@ namespace ImGui
         {
             c = markdown_[i];               // get the character at index
             if( c == 0 ) { break; }         // shouldn't happen but don't go beyond 0.
-
-            if( isEscape )
-            {
-                isEscape = false;
-                continue;
-            }
 
             // If we're at the beginning of the line, count any spaces
             if( line.isLeadingSpace )
@@ -676,16 +668,20 @@ namespace ImGui
 			case Emphasis::NONE:
 				if( link.state == Link::NO_LINK )
                 {
-					if( c == '*' || c == '_' ) {
-
-						line.lineEnd = i;
-						RenderLine(markdown_, line, textRegion, mdConfig_);
-						ImGui::SameLine(0.0f, 0.0f);
-						line.lastRenderPosition = i;
-						line.isEmphasis = true;
-
+                    int next = i + 1;
+                    int prev = i - 1;
+					if( ( c == '*' || c == '_' )
+                        && ( i == line.lineStart
+                            || markdown_[ prev ] == ' '
+                            || markdown_[ prev ] == '\t' ) // empasis must be preceded by whitespace or line start
+                        && (int)markdownLength_ > next // emphasis must precede non-whitespace
+                        && markdown_[ next ] != ' '
+                        && markdown_[ next ] != '\n'
+                        && markdown_[ next ] != '\t' )
+                    {
 						em.state = Emphasis::LEFT;
 						em.sym = c;
+                        em.text.start = i;
 						line.emphasisCount = 1;
 						continue;
 					}
@@ -699,8 +695,7 @@ namespace ImGui
 				}
                 else
                 {
-
-					line.lastRenderPosition = i - 1;
+					em.text.start = i - 1;
 					em.state = Emphasis::MIDDLE;
 				}
 				break;
@@ -708,7 +703,7 @@ namespace ImGui
 				if( em.sym == c )
                 {
 					em.state = Emphasis::RIGHT;
-					em.end = i;
+					em.text.stop = i;
                    // pass through to case Emphasis::RIGHT
 				}
                 else
@@ -718,9 +713,15 @@ namespace ImGui
 			case Emphasis::RIGHT:
 				if( em.sym == c )
                 {
-					if( i - em.end + 1 == line.emphasisCount )
+					if( i - em.text.stop + 1 == line.emphasisCount )
                     {
-					    line.lineEnd = em.end;
+                        // render text up to emphasis
+						line.lineEnd = em.text.start;
+						RenderLine(markdown_, line, textRegion, mdConfig_);
+						ImGui::SameLine(0.0f, 0.0f);
+						line.isEmphasis = true;
+						line.lastRenderPosition = em.text.start;
+					    line.lineEnd = em.text.stop;
 					    RenderLine( markdown_, line, textRegion, mdConfig_ );
 					    ImGui::SameLine( 0.0f, 0.0f );
 					    line.isEmphasis = false;
@@ -731,7 +732,7 @@ namespace ImGui
 				} 
                 else
                 {
-                    if( i < em.end + line.emphasisCount )
+                    if( i < em.text.stop + line.emphasisCount )
                     {
 					    em.state = Emphasis::MIDDLE;
 				    }
@@ -773,15 +774,6 @@ namespace ImGui
                 // reset the link
                 link = Link();
             }
-            else if (c == '\\')
-			{
-				line.lineEnd = i;
-				RenderLine( markdown_, line, textRegion, mdConfig_ );
-                ImGui::SameLine( 0.0f, 0.0f );
-				line.lastRenderPosition = i;
-
-				isEscape = true;
-			}
         }
 
         // render any remaining text if last char wasn't 0
