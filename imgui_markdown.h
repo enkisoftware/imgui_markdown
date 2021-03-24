@@ -515,11 +515,10 @@ namespace ImGui
         ImGuiStyle& style = ImGui::GetStyle();
         Line        line;
         Link        link;
+        Emphasis    em;
+		bool        isEscape = false;
         TextRegion  textRegion;
 
-        Emphasis    em;
-
-		bool isEscape = false;
 
 
         char c = 0;
@@ -528,9 +527,9 @@ namespace ImGui
             c = markdown_[i];               // get the character at index
             if( c == 0 ) { break; }         // shouldn't happen but don't go beyond 0.
 
-            if (isEscape)
+            if( isEscape )
             {
-                isEscape=false;
+                isEscape = false;
                 continue;
             }
 
@@ -671,13 +670,14 @@ namespace ImGui
                 }
             }
 
-            
-			switch (em.state)
+            // Test to see if we have emphasis styling
+			switch( em.state )
 			{
 			case Emphasis::NONE:
 
-				if (link.state == Link::NO_LINK) {
-					if (c == '*' || c == '_') {
+				if( link.state == Link::NO_LINK )
+                {
+					if( c == '*' || c == '_' ) {
 
 						line.lineEnd = i;
 						RenderLine(markdown_, line, textRegion, mdConfig_);
@@ -693,56 +693,67 @@ namespace ImGui
 				}
 				break;
 			case Emphasis::LEFT:
-				if (em.sym == c && line.emphasisCount < 3) {
+				if( em.sym == c && line.emphasisCount < 3 )
+                {
 					++line.emphasisCount;
 					continue;
-				} else {
+				}
+                else
+                {
 
 					line.lastRenderPosition = i - 1;
 					em.state = Emphasis::MIDDLE;
 				}
 				break;
 			case Emphasis::MIDDLE:
-				if (em.sym == c) {
+				if( em.sym == c )
+                {
 					em.state = Emphasis::RIGHT;
 					em.end = i;
 					continue;
 				}
 				break;
 			case Emphasis::RIGHT:
-				if (em.sym == c) {
+				if( em.sym == c )
+                {
 					continue;
-				} else if (i < em.end + line.emphasisCount) {
-					em.state = Emphasis::MIDDLE;
-				} else {
-
-					line.lineEnd = i - line.emphasisCount;
-					RenderLine(markdown_, line, textRegion, mdConfig_);
-
-					line.isEmphasis = false;
-
-					ImGui::SameLine(0.0f, 0.0f);
-					line.lastRenderPosition = i - 1;
-
-					em.state = Emphasis::NONE;
-				}
+				} 
+                else
+                {
+                    if( i < em.end + line.emphasisCount )
+                    {
+					    em.state = Emphasis::MIDDLE;
+				    }
+                    else
+                    {
+					    line.lineEnd = i - line.emphasisCount;
+					    RenderLine( markdown_, line, textRegion, mdConfig_ );
+					    ImGui::SameLine( 0.0f, 0.0f );
+					    line.isEmphasis = false;
+					    line.lastRenderPosition = i - 1;
+					    em.state = Emphasis::NONE;
+				    }
+                }
 				break;
 			}
 
             // handle end of line (render)
             if( c == '\n' )
             {
-                // render the line
+                // first check if the line is a horizontal rule
                 line.lineEnd = i;
-                if (em.state == Emphasis::MIDDLE && line.emphasisCount>=3 &&
-                    line.lineStart+ line.emphasisCount== i)
+                if( em.state == Emphasis::MIDDLE && line.emphasisCount >=3 &&
+                    ( line.lineStart + line.emphasisCount ) == i )
                 {
                     ImGui::Separator();
-                    ImGui::SameLine(0.0f, 0.0f);
+                    ImGui::SameLine( 0.0f, 0.0f );
                     em.state = Emphasis::NONE;
                     line.isEmphasis = false;
-                } else {
-                    RenderLine(markdown_, line, textRegion, mdConfig_);
+                }
+                else
+                {
+                    // render the line
+                    RenderLine( markdown_, line, textRegion, mdConfig_ );
                 }
 
                 // reset the line but preserve emphasis state
@@ -759,11 +770,12 @@ namespace ImGui
                 
                 // reset the link
                 link = Link();
-            }else if (c == '\\')
+            }
+            else if (c == '\\')
 			{
 				line.lineEnd = i;
-				RenderLine(markdown_, line, textRegion, mdConfig_);
-                ImGui::SameLine(0.0f, 0.0f);
+				RenderLine( markdown_, line, textRegion, mdConfig_ );
+                ImGui::SameLine( 0.0f, 0.0f );
 				line.lastRenderPosition = i;
 
 				isEscape = true;
@@ -864,6 +876,8 @@ namespace ImGui
 		case MarkdownFormatType::EMPHASIS:
         {
             MarkdownHeadingFormat fmt;
+            // default styling for emphasis uses last headingFormats - for your own styling
+            // implement EMPHASIS in your formatCallback
             fmt = markdownFormatInfo_.config->headingFormats[MarkdownConfig::NUMHEADINGS - 1];
 			if (start_)
 			{
