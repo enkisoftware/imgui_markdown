@@ -695,7 +695,7 @@ namespace ImGui
 				}
                 else
                 {
-					em.text.start = i - 1;
+					em.text.start = i;
 					em.state = Emphasis::MIDDLE;
 				}
 				break;
@@ -716,11 +716,11 @@ namespace ImGui
 					if( i - em.text.stop + 1 == line.emphasisCount )
                     {
                         // render text up to emphasis
-						line.lineEnd = em.text.start;
+						line.lineEnd = em.text.start - line.emphasisCount;
 						RenderLine(markdown_, line, textRegion, mdConfig_);
 						ImGui::SameLine(0.0f, 0.0f);
 						line.isEmphasis = true;
-						line.lastRenderPosition = em.text.start;
+						line.lastRenderPosition = em.text.start - 1;
 					    line.lineEnd = em.text.stop;
 					    RenderLine( markdown_, line, textRegion, mdConfig_ );
 					    ImGui::SameLine( 0.0f, 0.0f );
