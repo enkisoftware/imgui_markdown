@@ -1,5 +1,5 @@
 #pragma once
-#include "imgui.h"
+
 // License: zlib
 // Copyright (c) 2019 Juliette Foucaut & Doug Binks
 // 
@@ -899,18 +899,14 @@ namespace ImGui
                 {
                     ImGui::PushFont( fmt.font );
                 }
-#ifndef IMGUI_MARKDOWN_LESS_NEWLINES
                 ImGui::NewLine();
-#endif
             }
             else
             {
                 if( fmt.separator )
                 {
                     ImGui::Separator();
-#ifndef IMGUI_MARKDOWN_LESS_NEWLINES
                     ImGui::NewLine();
-#endif
                 } else {
                     ImGui::NewLine();
                 }
