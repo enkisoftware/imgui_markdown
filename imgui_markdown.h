@@ -545,7 +545,7 @@ namespace ImGui
                             ++i;
                             ++line.lastRenderPosition;
                         }
-                        continue;
+                        // carry on processing as could be emphasis
                     }
                     else if( c == '#' )
                     {
@@ -688,7 +688,7 @@ namespace ImGui
 				}
 				break;
 			case Emphasis::LEFT:
-				if( em.sym == c && line.emphasisCount < 3 )
+				if( em.sym == c )
                 {
 					++line.emphasisCount;
 					continue;
@@ -713,12 +713,18 @@ namespace ImGui
 			case Emphasis::RIGHT:
 				if( em.sym == c )
                 {
-					if( i - em.text.stop + 1 == line.emphasisCount )
+					if( line.emphasisCount < 3 && ( i - em.text.stop + 1 == line.emphasisCount ) )
                     {
                         // render text up to emphasis
-						line.lineEnd = em.text.start - line.emphasisCount;
-						RenderLine(markdown_, line, textRegion, mdConfig_);
-						ImGui::SameLine(0.0f, 0.0f);
+                        int lineEnd = em.text.start - line.emphasisCount;
+                        if( lineEnd > line.lineStart )
+                        {
+                            line.lineEnd = lineEnd;
+                            RenderLine(markdown_, line, textRegion, mdConfig_);
+						    ImGui::SameLine( 0.0f, 0.0f );
+                            line.isUnorderedListStart = false;
+                            line.leadSpaceCount = 0;
+                        }
 						line.isEmphasis = true;
 						line.lastRenderPosition = em.text.start - 1;
 					    line.lineEnd = em.text.stop;
@@ -756,7 +762,20 @@ namespace ImGui
                 else
                 {
                     // render the line
-                    RenderLine( markdown_, line, textRegion, mdConfig_ );
+                    if( em.state == Emphasis::NONE )
+                    {
+                        RenderLine( markdown_, line, textRegion, mdConfig_ );
+                    }
+                    else
+                    {
+                        int lineEnd = em.text.start - line.emphasisCount;
+                        if( lineEnd > line.lineStart )
+                        {
+                            line.lineEnd = lineEnd;
+                            RenderLine( markdown_, line, textRegion, mdConfig_ );
+                            ImGui::SameLine( 0.0f, 0.0f );
+                        }
+                    }
                 }
 
                 // reset the line but preserve emphasis state
