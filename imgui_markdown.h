@@ -752,10 +752,7 @@ namespace ImGui
 				} 
                 else
                 {
-                    if( i < em.text.stop + line.emphasisCount )
-                    {
-					    em.state = Emphasis::MIDDLE;
-				    }
+                    em.state = Emphasis::NONE;
                 }
 				break;
 			}
@@ -812,16 +809,32 @@ namespace ImGui
             }
         }
 
-        // render any remaining text if last char wasn't 0
-        if( markdownLength_ && line.lineStart < (int)markdownLength_ && markdown_[ line.lineStart ] != 0 )
+        if( em.state != Emphasis::NONE  )
         {
-            // handle both null terminated and non null terminated strings
+            // search for emphasis terminator did not find one, render as none emphasised
+            int start = em.text.start - line.emphasisCount;
+            line.lastRenderPosition = start - 1;
+            line.lineStart = start;
             line.lineEnd = (int)markdownLength_;
             if( 0 == markdown_[ line.lineEnd - 1 ] )
             {
                 --line.lineEnd;
             }
             RenderLine( markdown_, line, textRegion, mdConfig_ );
+        }
+        else
+        {
+            // render any remaining text if last char wasn't 0
+            if( markdownLength_ && line.lineStart < (int)markdownLength_ && markdown_[ line.lineStart ] != 0 )
+            {
+                // handle both null terminated and non null terminated strings
+                line.lineEnd = (int)markdownLength_;
+                if( 0 == markdown_[ line.lineEnd - 1 ] )
+                {
+                    --line.lineEnd;
+                }
+                RenderLine( markdown_, line, textRegion, mdConfig_ );
+            }
         }
     }
 
