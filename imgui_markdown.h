@@ -753,6 +753,17 @@ namespace ImGui
                 else
                 {
                     em.state = Emphasis::NONE;
+                    // render text up to here
+                    int start = em.text.start - line.emphasisCount;
+                    if( start < line.lineStart )
+                    {
+                        line.lineEnd = line.lineStart;
+                        line.lineStart = start;
+                        line.lastRenderPosition = start - 1;
+                        RenderLine(markdown_, line, textRegion, mdConfig_);
+                        line.lineStart          = line.lineEnd;
+                        line.lastRenderPosition = line.lineStart - 1;
+                    }
                 }
 				break;
 			}
