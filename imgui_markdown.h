@@ -436,6 +436,7 @@ namespace ImGui
 		};
         EmphasisState state = NONE;
         TextBlock text;
+        int  newlineCount = 0;
         char sym;
 	};
 
@@ -727,12 +728,25 @@ namespace ImGui
                         }
 						line.isEmphasis = true;
 						line.lastRenderPosition = em.text.start - 1;
+                        line.lineStart = em.text.start;
+                        for( int j = em.text.start; j < em.text.stop && em.newlineCount; ++j )
+                        {
+                            if( '\n' == markdown_[j] )
+                            {
+                                --em.newlineCount;
+                                line.lineEnd = j;
+                                RenderLine( markdown_, line, textRegion, mdConfig_ );
+                                line.lineStart = j + 1;
+                                line.lastRenderPosition = j;
+                            }
+                        }
 					    line.lineEnd = em.text.stop;
 					    RenderLine( markdown_, line, textRegion, mdConfig_ );
 					    ImGui::SameLine( 0.0f, 0.0f );
 					    line.isEmphasis = false;
 					    line.lastRenderPosition = i;
 					    em.state = Emphasis::NONE;
+                        em.newlineCount = 0;
                     }
                     continue;
 				} 
@@ -761,14 +775,17 @@ namespace ImGui
                 }
                 else
                 {
-                    // render the line
-                    if( em.state == Emphasis::NONE )
+                    // render the line if not a multiline emphasis
+                    // for now also render and reset emphasis state if an unordered list
+                    if( em.state == Emphasis::NONE || line.isUnorderedListStart )
                     {
                         RenderLine( markdown_, line, textRegion, mdConfig_ );
+                        em = Emphasis(); // reset emphasis state
                     }
                     else
                     {
                         int lineEnd = em.text.start - line.emphasisCount;
+                        ++em.newlineCount;
                         if( lineEnd > line.lineStart )
                         {
                             line.lineEnd = lineEnd;
