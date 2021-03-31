@@ -782,25 +782,9 @@ namespace ImGui
             }
         }
 
-        if( em.state != Emphasis::NONE  )
+        if( em.state == Emphasis::LEFT && line.emphasisCount >=3   )
         {
-            // search for emphasis terminator did not find one, render as none emphasised
-            if( line.emphasisCount >=3 && em.state == Emphasis::LEFT )
-            {
-                ImGui::Separator();
-            }
-            else
-            {
-                int start = em.text.start - line.emphasisCount;
-                line.lastRenderPosition = start - 1;
-                line.lineStart = start;
-                line.lineEnd = (int)markdownLength_;
-                if( 0 == markdown_[ line.lineEnd - 1 ] )
-                {
-                    --line.lineEnd;
-                }
-                RenderLine( markdown_, line, textRegion, mdConfig_ );
-            }
+            ImGui::Separator();
         }
         else
         {
