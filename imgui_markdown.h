@@ -610,6 +610,8 @@ namespace ImGui
                 else if (c == ')')--link.num_brackets_open;
                 if(link.num_brackets_open==0)
                 {
+                    // reset emphasis status, we do not support emphasis around links for now
+                    em = Emphasis();
                     // render previous line content
                     line.lineEnd = link.text.start - ( link.isImage ? 2 : 1 );
                     RenderLine( markdown_, line, textRegion, mdConfig_ );
