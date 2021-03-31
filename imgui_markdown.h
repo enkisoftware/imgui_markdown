@@ -785,15 +785,22 @@ namespace ImGui
         if( em.state != Emphasis::NONE  )
         {
             // search for emphasis terminator did not find one, render as none emphasised
-            int start = em.text.start - line.emphasisCount;
-            line.lastRenderPosition = start - 1;
-            line.lineStart = start;
-            line.lineEnd = (int)markdownLength_;
-            if( 0 == markdown_[ line.lineEnd - 1 ] )
+            if( line.emphasisCount >=3 && em.state == Emphasis::LEFT )
             {
-                --line.lineEnd;
+                ImGui::Separator();
             }
-            RenderLine( markdown_, line, textRegion, mdConfig_ );
+            else
+            {
+                int start = em.text.start - line.emphasisCount;
+                line.lastRenderPosition = start - 1;
+                line.lineStart = start;
+                line.lineEnd = (int)markdownLength_;
+                if( 0 == markdown_[ line.lineEnd - 1 ] )
+                {
+                    --line.lineEnd;
+                }
+                RenderLine( markdown_, line, textRegion, mdConfig_ );
+            }
         }
         else
         {
