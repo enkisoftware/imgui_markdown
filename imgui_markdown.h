@@ -436,7 +436,6 @@ namespace ImGui
 		};
         EmphasisState state = NONE;
         TextBlock text;
-        int  newlineCount = 0;
         char sym;
 	};
 
@@ -481,7 +480,6 @@ namespace ImGui
             const char* text = markdown_ + textStart + 1;
             textRegion_.RenderTextWrapped( text, text + textSize - 1 );
         }
-
 		else if( line_.isEmphasis )         // render emphasis
 		{
 			formatInfo.level = line_.emphasisCount;
@@ -490,8 +488,6 @@ namespace ImGui
 			const char* text = markdown_ + textStart;
 			textRegion_.RenderTextWrapped(text, text + textSize);
 		}
-        
-
         else                                // render a normal paragraph chunk
         {
             formatInfo.type = MarkdownFormatType::NORMAL_TEXT;
@@ -729,24 +725,12 @@ namespace ImGui
 						line.isEmphasis = true;
 						line.lastRenderPosition = em.text.start - 1;
                         line.lineStart = em.text.start;
-                        for( int j = em.text.start; j < em.text.stop && em.newlineCount; ++j )
-                        {
-                            if( '\n' == markdown_[j] )
-                            {
-                                --em.newlineCount;
-                                line.lineEnd = j;
-                                RenderLine( markdown_, line, textRegion, mdConfig_ );
-                                line.lineStart = j + 1;
-                                line.lastRenderPosition = j;
-                            }
-                        }
 					    line.lineEnd = em.text.stop;
 					    RenderLine( markdown_, line, textRegion, mdConfig_ );
 					    ImGui::SameLine( 0.0f, 0.0f );
 					    line.isEmphasis = false;
 					    line.lastRenderPosition = i;
-					    em.state = Emphasis::NONE;
-                        em.newlineCount = 0;
+					    em = Emphasis();
                     }
                     continue;
 				} 
@@ -778,37 +762,16 @@ namespace ImGui
                 {
                     ImGui::Separator();
                     ImGui::SameLine( 0.0f, 0.0f );
-                    em.state = Emphasis::NONE;
-                    line.isEmphasis = false;
                 }
                 else
                 {
-                    // render the line if not a multiline emphasis
-                    // for now also render and reset emphasis state if an unordered list
-                    if( em.state == Emphasis::NONE || line.isUnorderedListStart )
-                    {
-                        RenderLine( markdown_, line, textRegion, mdConfig_ );
-                        em = Emphasis(); // reset emphasis state
-                    }
-                    else
-                    {
-                        int lineEnd = em.text.start - line.emphasisCount;
-                        ++em.newlineCount;
-                        if( lineEnd > line.lineStart )
-                        {
-                            line.lineEnd = lineEnd;
-                            RenderLine( markdown_, line, textRegion, mdConfig_ );
-                            ImGui::SameLine( 0.0f, 0.0f );
-                        }
-                    }
+                    // render the line: multiline emphasis requires a complex implementation so not supporting
+                    RenderLine( markdown_, line, textRegion, mdConfig_ );
                 }
 
-                // reset the line but preserve emphasis state
-                int  emphasisCount = line.emphasisCount;
-                bool isEmphasis = line.isEmphasis;
+                // reset the line and emphasis state
 				line = Line();
-                line.emphasisCount = emphasisCount;
-                line.isEmphasis= isEmphasis;
+                em = Emphasis();
 
                 line.lineStart = i + 1;
                 line.lastRenderPosition = i;
