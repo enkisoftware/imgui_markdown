@@ -761,7 +761,6 @@ namespace ImGui
                     ( line.lineStart + line.emphasisCount ) == i )
                 {
                     ImGui::Separator();
-                    ImGui::SameLine( 0.0f, 0.0f );
                 }
                 else
                 {
