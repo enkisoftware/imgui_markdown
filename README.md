@@ -1,10 +1,10 @@
-Support development of imgui_markdown through our [Patreon](https://www.patreon.com/enkisoftware)
+Support development of imgui_markdown through [GitHub Sponsors](https://github.com/sponsors/dougbinks) or [Patreon](https://www.patreon.com/enkisoftware)
 
-[<img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" alt="Become a Patron" width="150"/>](https://www.patreon.com/enkisoftware)
+[<img src="https://img.shields.io/static/v1?logo=github&label=Github&message=Sponsor&color=#ea4aaa" width="200"/>](https://github.com/sponsors/dougbinks)    [<img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" alt="Become a Patron" width="150"/>](https://www.patreon.com/enkisoftware)
 
 # imgui_markdown
 
-## Markdown for Dear ImGui
+## Markdown For Dear ImGui
 
 A permissively licensed markdown single-header library for [Dear ImGui](https://github.com/ocornut/imgui).
 
@@ -14,12 +14,14 @@ imgui_markdown currently supports the following markdown functionality:
 
   * Wrapped text
   * Headers H1, H2, H3
+  * Emphasis
   * Indented text, multi levels
-  * Unordered lists and sub-lists
-  * Links
-  * Images
+  * Unordered list and sub-list
+  * Link
+  * Image
+  * Horizontal rule
 
-![imgui_markdown demo live editing](https://github.com/juliettef/Media/blob/master/imgui_markdown_demo_live_editing.gif)
+![imgui_markdown demo live editing](https://github.com/juliettef/Media/blob/main/imgui_markdown_demo_live_editing.gif?raw=true)
 
 *Note - the gif above is heavily compressed due to GitHub limitations. There's a [(slightly) better version of it on twitter](https://twitter.com/juulcat/status/1090996799266000898).*
 
@@ -33,8 +35,13 @@ Text wraps automatically. To add a new line, use 'Return'.
 ## H2
 ### H3
 ```
+### Emphasis
+```
+*emphasis*
+_emphasis_
+```
 ### Lists
-#### Indents
+#### Indent
 On a new line, at the start of the line, add two spaces per indent.
 ```
 Normal text
@@ -43,7 +50,7 @@ Normal text
 ······Indent level 3
 Normal text
 ```
-#### Unordered lists
+#### Unordered list
 On a new line, at the start of the line, add two spaces, an asterisks and a space. For nested lists, add two additional spaces in front of the asterisk per list level increment.
 ```
 Normal text
@@ -54,19 +61,29 @@ Normal text
 ··*·Unordered List level 1
 Normal text
 ```
-### Links
+### Link
 ```
 [link description](https://...)
 ```
-### Images
+### Image
 ```
 ![image alt text](image identifier e.g. filename)
 ```
+### Horizontal Rule
+```
+***
+___
+```
 
+![Example use of imgui_markdown with icon fonts](https://github.com/juliettef/Media/blob/main/imgui_markdown_icon_font.jpg?raw=true)
 
-![Example use of imgui_markdown with icon fonts](https://github.com/juliettef/Media/blob/master/imgui_markdown_icon_font.jpg)
+### Unsupported Syntax Combinations
+Non exhaustive
+  * Header with link, image or emphasis included - header breaks link, image, emphasis
+  * Emphasis with link or image - link, image break emphasis
+  * Multiline emphasis - new line breaks emphasis
 
-## Example use on Windows with links opening in a browser
+## Example Use On Windows With Links Opening In Browser
 
 ```Cpp
 
@@ -201,7 +218,7 @@ You can add [links like this one to enkisoftware](https://www.enkisoftware.com/)
 }
 ```
 
-## Projects using imgui_markdown
+## Projects Using imgui_markdown
 
 ### [Avoyd](https://www.enkisoftware.com/avoyd)
 Avoyd is an abstract 6 degrees of freedom voxel game.  
@@ -209,7 +226,7 @@ Avoyd is an abstract 6 degrees of freedom voxel game.
 
 The game and the voxel editor's help and tutorials use imgui_markdown with Dear ImGui.  
 
-![Avoyd screenshot](https://github.com/juliettef/Media/blob/master/imgui_markdown_Avoyd_about_OSS.png?raw=true)
+![Avoyd screenshot](https://github.com/juliettef/Media/blob/main/imgui_markdown_Avoyd_about_OSS.png?raw=true)
 
 ### [bgfx](https://github.com/bkaradzic/bgfx)
 Cross-platform rendering library.  
@@ -224,7 +241,7 @@ GPU/CPU Texture Generator
 ### [Light Tracer](https://lighttracer.org/)
 Experimental GPU ray tracer for web
 
-![Light Tracer screenshot](https://github.com/juliettef/Media/blob/master/imgui_markdown_Light_Tracer.png?raw=true)
+![Light Tracer screenshot](https://github.com/juliettef/Media/blob/main/imgui_markdown_Light_Tracer.png?raw=true)
 
 ### [Visual 6502 Remix](https://github.com/floooh/v6502r)
 Transistor level 6502 Hardware Simulation  
@@ -235,13 +252,14 @@ Using imgui_markdown as help viewer for Visual 6502 Remix with internal and exte
 [![Using imgui_markdown as help viewer for Visual 6502 Remix with internal and external links - animated gif](https://user-images.githubusercontent.com/1699414/69185510-320baa00-0b17-11ea-9fd5-82ed6e02a05c.gif)
 ![Using imgui_markdown as help viewer for Visual 6502 Remix - screenshot](https://user-images.githubusercontent.com/1699414/69185626-67b09300-0b17-11ea-85a8-fed54a0082b4.png)](https://github.com/ocornut/imgui/issues/2847#issuecomment-555710973)  
 
-![Using imgui_markdown in the About page for Visual 6502 Remix - screenshot](https://github.com/juliettef/Media/blob/master/imgui_markdown_Visual_6502_Remix_About.png?raw=true)
+![Using imgui_markdown in the About page for Visual 6502 Remix - screenshot](https://github.com/juliettef/Media/blob/main/imgui_markdown_Visual_6502_Remix_About.png?raw=true)
 
 ## Credits
 
 Design and implementation - [Doug Binks](http://www.enkisoftware.com/about.html#doug) - [@dougbinks](https://github.com/dougbinks)  
 Implementation and maintenance - [Juliette Foucaut](http://www.enkisoftware.com/about.html#juliette) - [@juliettef](https://github.com/juliettef)  
 [Image resize](https://github.com/juliettef/imgui_markdown/pull/15) example code - [Soufiane Khiat](https://github.com/soufianekhiat)  
+Emphasis and horizontal rule initial implementation - [Dmitry Mekhontsev](https://github.com/mekhontsev)  
 Thanks to [Omar Cornut for Dear ImGui](https://github.com/ocornut/imgui)  
 
 ## License (zlib)
