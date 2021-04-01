@@ -611,9 +611,15 @@ namespace ImGui
                 }
                 break;
             case Link::HAS_SQUARE_BRACKETS_ROUND_BRACKET_OPEN:
-                if (c == '(')++link.num_brackets_open;
-                else if (c == ')')--link.num_brackets_open;
-                if(link.num_brackets_open==0)
+                if( c == '(' )
+                {
+                    ++link.num_brackets_open;
+                }
+                else if( c == ')' )
+                {
+                    --link.num_brackets_open;
+                }
+                if( link.num_brackets_open == 0 )
                 {
                     // reset emphasis status, we do not support emphasis around links for now
                     em = Emphasis();
