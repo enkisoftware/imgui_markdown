@@ -39,6 +39,8 @@ Text wraps automatically. To add a new line, use 'Return'.
 ```
 *emphasis*
 _emphasis_
+**strong emphasis**
+__strong emphasis__
 ```
 ### Lists
 #### Indent
