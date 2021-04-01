@@ -569,7 +569,12 @@ namespace ImGui
                                 break;
                             }
                         }
-                        if( line.isHeading ) { continue; }
+                        if( line.isHeading )
+                        {
+                            // reset emphasis status, we do not support emphasis around headers for now
+                            em = Emphasis();
+                            continue;
+                        }
                     }
                 }
             }
@@ -580,7 +585,7 @@ namespace ImGui
             switch( link.state )
             {
             case Link::NO_LINK:
-                if( c == '[' )
+                if( c == '[' && !line.isHeading ) // we do not support headings with links for now
                 {
                     link.state = Link::HAS_SQUARE_BRACKET_OPEN;
                     link.text.start = i + 1;
@@ -665,7 +670,7 @@ namespace ImGui
 			switch( em.state )
 			{
 			case Emphasis::NONE:
-				if( link.state == Link::NO_LINK )
+				if( link.state == Link::NO_LINK && !line.isHeading )
                 {
                     int next = i + 1;
                     int prev = i - 1;
