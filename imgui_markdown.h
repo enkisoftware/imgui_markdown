@@ -39,10 +39,12 @@ Currently requires C++11 or above
 imgui_markdown currently supports the following markdown functionality:
  - Wrapped text
  - Headers H1, H2, H3
+ - Emphasis
  - Indented text, multi levels
  - Unordered lists and sub-lists
- - Links
- - Images
+ - Link
+ - Image
+ - Horizontal rule
  
 Syntax
 
@@ -54,22 +56,32 @@ Headers:
 ## H2
 ### H3
 
+Emphasis:
+*emphasis*
+_emphasis_
+**strong emphasis**
+__strong emphasis__
+
 Indents: 
 On a new line, at the start of the line, add two spaces per indent.
-··Indent level 1
-····Indent level 2
+  Indent level 1
+    Indent level 2
 
 Unordered lists: 
 On a new line, at the start of the line, add two spaces, an asterisks and a space. 
 For nested lists, add two additional spaces in front of the asterisk per list level increment.
-··*·Unordered List level 1
-····*·Unordered List level 2
+  * Unordered List level 1
+    * Unordered List level 2
 
-Links:
+Link:
 [link description](https://...)
 
-Images:
+Image:
 ![image alt text](image identifier e.g. filename)
+
+Horizontal Rule:
+***
+___
 
 ===============================================================================
 
@@ -157,7 +169,7 @@ void ExampleMarkdownFormatCallback( const ImGui::MarkdownFormatInfo& markdownFor
         {
             if( start_ )
             {
-                ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] );
+                ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyle().Colors[ ImGuiCol_TextDisabled ] );
             }
             else
             {
@@ -194,13 +206,18 @@ void MarkdownExample()
     const std::string markdownText = u8R"(
 # H1 Header: Text and Links
 You can add [links like this one to enkisoftware](https://www.enkisoftware.com/) and lines will wrap well.
+You can also insert images ![image alt text](image identifier e.g. filename)
+Horizontal rules:
+***
+___
+*Emphasis* and **strong emphasis** change the appearance of the text.
 ## H2 Header: indented text.
   This text has an indent (two leading spaces).
     This one has two.
 ### H3 Header: Lists
   * Unordered lists
     * Lists can be indented with two extra spaces.
-  * Lists can have [links like this one to Avoyd](https://www.avoyd.com/)
+  * Lists can have [links like this one to Avoyd](https://www.avoyd.com/) and *emphasized text*
 )";
     Markdown( markdownText );
 }
@@ -514,8 +531,6 @@ namespace ImGui
         Emphasis    em;
         TextRegion  textRegion;
 
-
-
         char c = 0;
         for( int i=0; i < (int)markdownLength_; ++i )
         {
@@ -536,7 +551,7 @@ namespace ImGui
                     line.lastRenderPosition = i - 1;
                     if(( c == '*' ) && ( line.leadSpaceCount >= 2 ))
                     {
-                        if(( (int)markdownLength_ > i + 1 ) && ( markdown_[ i + 1 ] == ' ' ))    // space after '*'
+                        if( ( (int)markdownLength_ > i + 1 ) && ( markdown_[ i + 1 ] == ' ' ) )    // space after '*'
                         {
                             line.isUnorderedListStart = true;
                             ++i;
@@ -579,8 +594,6 @@ namespace ImGui
                 }
             }
 
-           
-            
             // Test to see if we have a link
             switch( link.state )
             {
@@ -636,7 +649,7 @@ namespace ImGui
                         bool useLinkCallback = false;
                         if( mdConfig_.imageCallback )
                         {
-                            MarkdownImageData imageData = mdConfig_.imageCallback({ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true });
+                            MarkdownImageData imageData = mdConfig_.imageCallback( { markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true } );
                             useLinkCallback = imageData.useLinkCallback;
                             if( imageData.isValid )
                             {
@@ -656,7 +669,7 @@ namespace ImGui
                             }
                             if( link.text.size() > 0 && mdConfig_.tooltipCallback )
                             {
-                                mdConfig_.tooltipCallback( {{ markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true }, mdConfig_.linkIcon } );
+                                mdConfig_.tooltipCallback( { { markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true }, mdConfig_.linkIcon } );
                             }
                         }
                     }
@@ -730,7 +743,7 @@ namespace ImGui
                         if( lineEnd > line.lineStart )
                         {
                             line.lineEnd = lineEnd;
-                            RenderLine(markdown_, line, textRegion, mdConfig_);
+                            RenderLine( markdown_, line, textRegion, mdConfig_ );
 						    ImGui::SameLine( 0.0f, 0.0f );
                             line.isUnorderedListStart = false;
                             line.leadSpaceCount = 0;
@@ -795,7 +808,7 @@ namespace ImGui
             }
         }
 
-        if( em.state == Emphasis::LEFT && line.emphasisCount >=3   )
+        if( em.state == Emphasis::LEFT && line.emphasisCount >= 3 )
         {
             ImGui::Separator();
         }
@@ -838,13 +851,13 @@ namespace ImGui
 
         if(bHovered)
         {
-            if(ImGui::IsMouseReleased( 0 ) && mdConfig_.linkCallback)
+            if( ImGui::IsMouseReleased( 0 ) && mdConfig_.linkCallback )
             {
                 mdConfig_.linkCallback( { markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false } );
             }
             if( mdConfig_.tooltipCallback )
             {
-                mdConfig_.tooltipCallback( {{ markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false }, mdConfig_.linkIcon } );
+                mdConfig_.tooltipCallback( { { markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false }, mdConfig_.linkIcon } );
             }
         }
         return bThisItemHovered;
@@ -885,7 +898,7 @@ namespace ImGui
             }
         }
 
-    
+
     inline void defaultMarkdownFormatCallback( const MarkdownFormatInfo& markdownFormatInfo_, bool start_ )
     {
         switch( markdownFormatInfo_.type )
@@ -897,20 +910,37 @@ namespace ImGui
             MarkdownHeadingFormat fmt;
             // default styling for emphasis uses last headingFormats - for your own styling
             // implement EMPHASIS in your formatCallback
-            fmt = markdownFormatInfo_.config->headingFormats[MarkdownConfig::NUMHEADINGS - 1];
-			if (start_)
-			{
-				if (fmt.font)
-				{
-					ImGui::PushFont(fmt.font);
-				}
-			} else
-			{
-				if (fmt.font)
-				{
-					ImGui::PopFont();
-				}
-			}
+            if( markdownFormatInfo_.level == 1 )
+            {
+                // normal emphasis
+ 			    if( start_ )
+			    {
+                    ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyle().Colors[ ImGuiCol_TextDisabled ] );
+			    }
+                else
+			    {
+                    ImGui::PopStyleColor();
+			    }              
+            }
+            else
+            {
+                // strong emphasis
+                fmt = markdownFormatInfo_.config->headingFormats[ MarkdownConfig::NUMHEADINGS - 1 ];
+			    if( start_ )
+			    {
+				    if( fmt.font )
+				    {
+					    ImGui::PushFont( fmt.font );
+				    }
+			    }
+                else
+			    {
+				    if( fmt.font )
+				    {
+					    ImGui::PopFont();
+				    }
+			    }
+            }
             break;
         }
         case MarkdownFormatType::HEADING:
@@ -926,7 +956,6 @@ namespace ImGui
             }
             if( start_ )
             {
-
                 if( fmt.font  )
                 {
                     ImGui::PushFont( fmt.font );
@@ -939,10 +968,11 @@ namespace ImGui
                 {
                     ImGui::Separator();
                     ImGui::NewLine();
-                } else {
+                }
+                else
+                {
                     ImGui::NewLine();
                 }
-                
                 if( fmt.font )
                 {
                     ImGui::PopFont();
@@ -955,18 +985,18 @@ namespace ImGui
         case MarkdownFormatType::LINK:
             if( start_ )
             {
-                ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] );
+                ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyle().Colors[ ImGuiCol_ButtonHovered ] );
             }
             else
             {
                 ImGui::PopStyleColor();
                 if( markdownFormatInfo_.itemHovered )
                 {
-                    ImGui::UnderLine( ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] );
+                    ImGui::UnderLine( ImGui::GetStyle().Colors[ ImGuiCol_ButtonHovered ] );
                 }
                 else
                 {
-                    ImGui::UnderLine( ImGui::GetStyle().Colors[ImGuiCol_Button] );
+                    ImGui::UnderLine( ImGui::GetStyle().Colors[ ImGuiCol_Button ] );
                 }
             }
             break;
@@ -974,4 +1004,3 @@ namespace ImGui
     }
 
 }
-
