@@ -2,15 +2,15 @@
 
 // License: zlib
 // Copyright (c) 2019 Juliette Foucaut & Doug Binks
-// 
+//
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-// 
+//
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-// 
+//
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -45,10 +45,10 @@ imgui_markdown currently supports the following markdown functionality:
  - Link
  - Image
  - Horizontal rule
- 
+
 Syntax
 
-Wrapping: 
+Wrapping:
 Text wraps automatically. To add a new line, use 'Return'.
 
 Headers:
@@ -62,13 +62,13 @@ _emphasis_
 **strong emphasis**
 __strong emphasis__
 
-Indents: 
+Indents:
 On a new line, at the start of the line, add two spaces per indent.
   Indent level 1
     Indent level 2
 
-Unordered lists: 
-On a new line, at the start of the line, add two spaces, an asterisks and a space. 
+Unordered lists:
+On a new line, at the start of the line, add two spaces, an asterisks and a space.
 For nested lists, add two additional spaces in front of the asterisk per list level increment.
   * Unordered List level 1
     * Unordered List level 2
@@ -104,7 +104,7 @@ static ImFont* H1 = NULL;
 static ImFont* H2 = NULL;
 static ImFont* H3 = NULL;
 
-static ImGui::MarkdownConfig mdConfig; 
+static ImGui::MarkdownConfig mdConfig;
 
 
 void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
@@ -126,7 +126,7 @@ inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData d
     imageData.useLinkCallback = false;
     imageData.user_texture_id = image;
     imageData.size =            ImVec2( 40.0f, 20.0f );
-    
+
     // For image resize when available size.x > image width, add
     ImVec2 const contentSize = ImGui::GetContentRegionAvail();
     if( imageData.size.x > contentSize.x )
@@ -158,8 +158,8 @@ void ExampleMarkdownFormatCallback( const ImGui::MarkdownFormatInfo& markdownFor
     // Call the default first so any settings can be overwritten by our implementation.
     // Alternatively could be called or not called in a switch statement on a case by case basis.
     // See defaultMarkdownFormatCallback definition for furhter examples of how to use it.
-    ImGui::defaultMarkdownFormatCallback( markdownFormatInfo_, start_ );        
-       
+    ImGui::defaultMarkdownFormatCallback( markdownFormatInfo_, start_ );
+
     switch( markdownFormatInfo_.type )
     {
     // example: change the colour of heading level 2
@@ -252,7 +252,7 @@ namespace ImGui
         MarkdownLinkCallbackData linkData;
         const char*              linkIcon;
     };
-    
+
     struct MarkdownImageData
     {
         bool                    isValid = false;                    // if true, will draw the image
@@ -282,7 +282,7 @@ namespace ImGui
         const MarkdownConfig*   config  = NULL;
     };
 
-    typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );    
+    typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );
     typedef void                MarkdownTooltipCallback( MarkdownTooltipCallbackData data );
 
     inline void defaultMarkdownTooltipCallback( MarkdownTooltipCallbackData data_ )
@@ -303,7 +303,7 @@ namespace ImGui
     inline void defaultMarkdownFormatCallback( const MarkdownFormatInfo& markdownFormatInfo_, bool start_ );
 
     struct MarkdownHeadingFormat
-    {   
+    {
         ImFont*                 font;                               // ImGui font
         bool                    separator;                          // if true, an underlined separator is drawn after the header
     };
@@ -321,7 +321,7 @@ namespace ImGui
         MarkdownImageCallback*  imageCallback = NULL;
         const char*             linkIcon = "";                      // icon displayd in link tooltip
         MarkdownHeadingFormat   headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
-        void*                   userData = NULL;        
+        void*                   userData = NULL;
         MarkdownFormalCallback* formatCallback = defaultMarkdownFormatCallback;
     };
 
@@ -373,7 +373,7 @@ namespace ImGui
                 text_ = endLine;
                 if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
                 endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
-                if( text_ == endLine ) 
+                if( text_ == endLine )
                 {
                     endLine++;
                 }
@@ -388,7 +388,7 @@ namespace ImGui
             RenderTextWrapped( text_, text_end_, true );
         }
 
-        bool RenderLinkText( const char* text_, const char* text_end_, const Link& link_, 
+        bool RenderLinkText( const char* text_, const char* text_end_, const Link& link_,
             const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_ );
 
         void RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_,
@@ -444,17 +444,17 @@ namespace ImGui
         int num_brackets_open = 0;
     };
 
-	struct Emphasis {
-		enum EmphasisState {
-			NONE,
-			LEFT,
-			MIDDLE,
-			RIGHT,
-		};
+    struct Emphasis {
+        enum EmphasisState {
+            NONE,
+            LEFT,
+            MIDDLE,
+            RIGHT,
+        };
         EmphasisState state = NONE;
         TextBlock text;
         char sym;
-	};
+    };
 
     inline void UnderLine( ImColor col_ )
     {
@@ -469,8 +469,8 @@ namespace ImGui
         // indent
         int indentStart = 0;
         if( line_.isUnorderedListStart )    // ImGui unordered list render always adds one indent
-        { 
-            indentStart = 1; 
+        {
+            indentStart = 1;
         }
         for( int j = indentStart; j < line_.leadSpaceCount / 2; ++j )    // add indents
         {
@@ -497,14 +497,14 @@ namespace ImGui
             const char* text = markdown_ + textStart + 1;
             textRegion_.RenderTextWrapped( text, text + textSize - 1 );
         }
-		else if( line_.isEmphasis )         // render emphasis
-		{
-			formatInfo.level = line_.emphasisCount;
-			formatInfo.type = MarkdownFormatType::EMPHASIS;
-			mdConfig_.formatCallback(formatInfo, true);
-			const char* text = markdown_ + textStart;
-			textRegion_.RenderTextWrapped(text, text + textSize);
-		}
+        else if( line_.isEmphasis )         // render emphasis
+        {
+            formatInfo.level = line_.emphasisCount;
+            formatInfo.type = MarkdownFormatType::EMPHASIS;
+            mdConfig_.formatCallback(formatInfo, true);
+            const char* text = markdown_ + textStart;
+            textRegion_.RenderTextWrapped(text, text + textSize);
+        }
         else                                // render a normal paragraph chunk
         {
             formatInfo.type = MarkdownFormatType::NORMAL_TEXT;
@@ -520,7 +520,7 @@ namespace ImGui
             ImGui::Unindent();
         }
     }
-    
+
     // render markdown
     inline void Markdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ )
     {
@@ -686,14 +686,14 @@ namespace ImGui
             }
 
             // Test to see if we have emphasis styling
-			switch( em.state )
-			{
-			case Emphasis::NONE:
-				if( link.state == Link::NO_LINK && !line.isHeading )
+            switch( em.state )
+            {
+            case Emphasis::NONE:
+                if( link.state == Link::NO_LINK && !line.isHeading )
                 {
                     int next = i + 1;
                     int prev = i - 1;
-					if( ( c == '*' || c == '_' )
+                    if( ( c == '*' || c == '_' )
                         && ( i == line.lineStart
                             || markdown_[ prev ] == ' '
                             || markdown_[ prev ] == '\t' ) // empasis must be preceded by whitespace or line start
@@ -702,41 +702,41 @@ namespace ImGui
                         && markdown_[ next ] != '\n'
                         && markdown_[ next ] != '\t' )
                     {
-						em.state = Emphasis::LEFT;
-						em.sym = c;
+                        em.state = Emphasis::LEFT;
+                        em.sym = c;
                         em.text.start = i;
-						line.emphasisCount = 1;
-						continue;
-					}
-				}
-				break;
-			case Emphasis::LEFT:
-				if( em.sym == c )
+                        line.emphasisCount = 1;
+                        continue;
+                    }
+                }
+                break;
+            case Emphasis::LEFT:
+                if( em.sym == c )
                 {
-					++line.emphasisCount;
-					continue;
-				}
+                    ++line.emphasisCount;
+                    continue;
+                }
                 else
                 {
-					em.text.start = i;
-					em.state = Emphasis::MIDDLE;
-				}
-				break;
-			case Emphasis::MIDDLE:
-				if( em.sym == c )
+                    em.text.start = i;
+                    em.state = Emphasis::MIDDLE;
+                }
+                break;
+            case Emphasis::MIDDLE:
+                if( em.sym == c )
                 {
-					em.state = Emphasis::RIGHT;
-					em.text.stop = i;
+                    em.state = Emphasis::RIGHT;
+                    em.text.stop = i;
                    // pass through to case Emphasis::RIGHT
-				}
+                }
                 else
                 {
                     break;
                 }
-			case Emphasis::RIGHT:
-				if( em.sym == c )
+            case Emphasis::RIGHT:
+                if( em.sym == c )
                 {
-					if( line.emphasisCount < 3 && ( i - em.text.stop + 1 == line.emphasisCount ) )
+                    if( line.emphasisCount < 3 && ( i - em.text.stop + 1 == line.emphasisCount ) )
                     {
                         // render text up to emphasis
                         int lineEnd = em.text.start - line.emphasisCount;
@@ -744,22 +744,22 @@ namespace ImGui
                         {
                             line.lineEnd = lineEnd;
                             RenderLine( markdown_, line, textRegion, mdConfig_ );
-						    ImGui::SameLine( 0.0f, 0.0f );
+                            ImGui::SameLine( 0.0f, 0.0f );
                             line.isUnorderedListStart = false;
                             line.leadSpaceCount = 0;
                         }
-						line.isEmphasis = true;
-						line.lastRenderPosition = em.text.start - 1;
+                        line.isEmphasis = true;
+                        line.lastRenderPosition = em.text.start - 1;
                         line.lineStart = em.text.start;
-					    line.lineEnd = em.text.stop;
-					    RenderLine( markdown_, line, textRegion, mdConfig_ );
-					    ImGui::SameLine( 0.0f, 0.0f );
-					    line.isEmphasis = false;
-					    line.lastRenderPosition = i;
-					    em = Emphasis();
+                        line.lineEnd = em.text.stop;
+                        RenderLine( markdown_, line, textRegion, mdConfig_ );
+                        ImGui::SameLine( 0.0f, 0.0f );
+                        line.isEmphasis = false;
+                        line.lastRenderPosition = i;
+                        em = Emphasis();
                     }
                     continue;
-				} 
+                }
                 else
                 {
                     em.state = Emphasis::NONE;
@@ -775,8 +775,8 @@ namespace ImGui
                         line.lastRenderPosition = line.lineStart - 1;
                     }
                 }
-				break;
-			}
+                break;
+            }
 
             // handle end of line (render)
             if( c == '\n' )
@@ -795,14 +795,14 @@ namespace ImGui
                 }
 
                 // reset the line and emphasis state
-				line = Line();
+                line = Line();
                 em = Emphasis();
 
                 line.lineStart = i + 1;
                 line.lastRenderPosition = i;
 
                 textRegion.ResetIndent();
-                
+
                 // reset the link
                 link = Link();
             }
@@ -885,7 +885,7 @@ namespace ImGui
                 text_ = endLine;
                 if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
                 endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
-                if( text_ == endLine ) 
+                if( text_ == endLine )
                 {
                     endLine++;
                 }
@@ -905,7 +905,7 @@ namespace ImGui
         {
         case MarkdownFormatType::NORMAL_TEXT:
             break;
-		case MarkdownFormatType::EMPHASIS:
+        case MarkdownFormatType::EMPHASIS:
         {
             MarkdownHeadingFormat fmt;
             // default styling for emphasis uses last headingFormats - for your own styling
@@ -913,33 +913,33 @@ namespace ImGui
             if( markdownFormatInfo_.level == 1 )
             {
                 // normal emphasis
- 			    if( start_ )
-			    {
+                 if( start_ )
+                {
                     ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyle().Colors[ ImGuiCol_TextDisabled ] );
-			    }
+                }
                 else
-			    {
+                {
                     ImGui::PopStyleColor();
-			    }              
+                }
             }
             else
             {
                 // strong emphasis
                 fmt = markdownFormatInfo_.config->headingFormats[ MarkdownConfig::NUMHEADINGS - 1 ];
-			    if( start_ )
-			    {
-				    if( fmt.font )
-				    {
-					    ImGui::PushFont( fmt.font );
-				    }
-			    }
+                if( start_ )
+                {
+                    if( fmt.font )
+                    {
+                        ImGui::PushFont( fmt.font );
+                    }
+                }
                 else
-			    {
-				    if( fmt.font )
-				    {
-					    ImGui::PopFont();
-				    }
-			    }
+                {
+                    if( fmt.font )
+                    {
+                        ImGui::PopFont();
+                    }
+                }
             }
             break;
         }

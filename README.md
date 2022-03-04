@@ -106,7 +106,7 @@ static ImFont* H1 = NULL;
 static ImFont* H2 = NULL;
 static ImFont* H3 = NULL;
 
-static ImGui::MarkdownConfig mdConfig; 
+static ImGui::MarkdownConfig mdConfig;
 
 
 void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
@@ -160,8 +160,8 @@ void ExampleMarkdownFormatCallback( const ImGui::MarkdownFormatInfo& markdownFor
     // Call the default first so any settings can be overwritten by our implementation.
     // Alternatively could be called or not called in a switch statement on a case by case basis.
     // See defaultMarkdownFormatCallback definition for furhter examples of how to use it.
-    ImGui::defaultMarkdownFormatCallback( markdownFormatInfo_, start_ );        
-       
+    ImGui::defaultMarkdownFormatCallback( markdownFormatInfo_, start_ );
+
     switch( markdownFormatInfo_.type )
     {
     // example: change the colour of heading level 2
@@ -228,19 +228,19 @@ ___
 ## Projects Using imgui_markdown
 
 ### [Avoyd](https://www.enkisoftware.com/avoyd)
-Avoyd is an abstract 6 degrees of freedom voxel game.  
-[www.avoyd.com](https://www.avoyd.com)  
+Avoyd is an abstract 6 degrees of freedom voxel game.
+[www.avoyd.com](https://www.avoyd.com)
 
-The game and the voxel editor's help and tutorials use imgui_markdown with Dear ImGui.  
+The game and the voxel editor's help and tutorials use imgui_markdown with Dear ImGui.
 
 ![Avoyd screenshot](https://github.com/juliettef/Media/blob/main/imgui_markdown_Avoyd_about_OSS.png?raw=true)
 
 ### [bgfx](https://github.com/bkaradzic/bgfx)
-Cross-platform rendering library.  
+Cross-platform rendering library.
 [bkaradzic.github.io/bgfx/overview](https://bkaradzic.github.io/bgfx/overview.html)
 
 ### [Imogen](https://github.com/CedricGuillemet/Imogen)
-GPU/CPU Texture Generator  
+GPU/CPU Texture Generator
 [skaven.fr/imogen](http://skaven.fr/imogen/)
 
 ![Imogen screenshot](https://camo.githubusercontent.com/28347bc0c1627aa4f289e1b2b769afcb3a5de370/68747470733a2f2f692e696d6775722e636f6d2f7351664f3542722e706e67)
@@ -251,23 +251,23 @@ Experimental GPU ray tracer for web
 ![Light Tracer screenshot](https://github.com/juliettef/Media/blob/main/imgui_markdown_Light_Tracer.png?raw=true)
 
 ### [Visual 6502 Remix](https://github.com/floooh/v6502r)
-Transistor level 6502 Hardware Simulation  
-[hfloooh.github.io/visual6502remix](https://floooh.github.io/visual6502remix/)  
+Transistor level 6502 Hardware Simulation
+[hfloooh.github.io/visual6502remix](https://floooh.github.io/visual6502remix/)
 
-Using imgui_markdown as help viewer for Visual 6502 Remix with internal and external links: 
- 
+Using imgui_markdown as help viewer for Visual 6502 Remix with internal and external links:
+
 [![Using imgui_markdown as help viewer for Visual 6502 Remix with internal and external links - animated gif](https://user-images.githubusercontent.com/1699414/69185510-320baa00-0b17-11ea-9fd5-82ed6e02a05c.gif)
-![Using imgui_markdown as help viewer for Visual 6502 Remix - screenshot](https://user-images.githubusercontent.com/1699414/69185626-67b09300-0b17-11ea-85a8-fed54a0082b4.png)](https://github.com/ocornut/imgui/issues/2847#issuecomment-555710973)  
+![Using imgui_markdown as help viewer for Visual 6502 Remix - screenshot](https://user-images.githubusercontent.com/1699414/69185626-67b09300-0b17-11ea-85a8-fed54a0082b4.png)](https://github.com/ocornut/imgui/issues/2847#issuecomment-555710973)
 
 ![Using imgui_markdown in the About page for Visual 6502 Remix - screenshot](https://github.com/juliettef/Media/blob/main/imgui_markdown_Visual_6502_Remix_About.png?raw=true)
 
 ## Credits
 
-Design and implementation - [Doug Binks](http://www.enkisoftware.com/about.html#doug) - [@dougbinks](https://github.com/dougbinks)  
-Implementation and maintenance - [Juliette Foucaut](http://www.enkisoftware.com/about.html#juliette) - [@juliettef](https://github.com/juliettef)  
-[Image resize](https://github.com/juliettef/imgui_markdown/pull/15) example code - [Soufiane Khiat](https://github.com/soufianekhiat)  
-Emphasis and horizontal rule initial implementation - [Dmitry Mekhontsev](https://github.com/mekhontsev)  
-Thanks to [Omar Cornut for Dear ImGui](https://github.com/ocornut/imgui)  
+Design and implementation - [Doug Binks](http://www.enkisoftware.com/about.html#doug) - [@dougbinks](https://github.com/dougbinks)
+Implementation and maintenance - [Juliette Foucaut](http://www.enkisoftware.com/about.html#juliette) - [@juliettef](https://github.com/juliettef)
+[Image resize](https://github.com/juliettef/imgui_markdown/pull/15) example code - [Soufiane Khiat](https://github.com/soufianekhiat)
+Emphasis and horizontal rule initial implementation - [Dmitry Mekhontsev](https://github.com/mekhontsev)
+Thanks to [Omar Cornut for Dear ImGui](https://github.com/ocornut/imgui)
 
 ## License (zlib)
 

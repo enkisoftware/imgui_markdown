@@ -28,12 +28,12 @@ Test - Emphasis In List
 
 Test - Emphasis In Indented Paragraph
 
-  *Indented emphasis with stars*  
+  *Indented emphasis with stars*
     *Double indent with emphasis*
     Double indent without emphasis
     **Double indent** with *some* emphasis
   _Indented emphasis with underscores_
-  
+
 Test - Horizontal Rule
 
 ***
@@ -54,7 +54,7 @@ Unsupported Syntax Combinations (non exhaustive)
 [Link with *unsupported emphasis* included](url)
 *Unsupported emphasis with [link](url) included*
 _Unsupported emphasis with image ![image alt text](image identifier e.g. filename) included_
-*Unsupported emphasis 
+*Unsupported emphasis
 on multiple lines*
 _Unsupported emphasis
 on multiple lines_
