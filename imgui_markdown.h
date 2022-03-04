@@ -525,7 +525,6 @@ namespace ImGui
     inline void Markdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ )
     {
         static const char* linkHoverStart = NULL; // we need to preserve status of link hovering between frames
-        ImGuiStyle& style = ImGui::GetStyle();
         Line        line;
         Link        link;
         Emphasis    em;
