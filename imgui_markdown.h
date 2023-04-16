@@ -863,12 +863,37 @@ namespace ImGui
         return bThisItemHovered;
     }
 
+    // IsCharInsideWord based on ImGui's CalcWordWrapPositionA
+    inline bool IsCharInsideWord( char c_ )
+    {
+        return c_ != ' ' && c_ != '.' && c_ != ',' && c_ != ';' && c_ != '!' && c_ != '?' && c_ != '\"';
+    }
+
     inline void TextRegion::RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_,
         const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_, bool bIndentToHere_ )
         {
             float       scale = ImGui::GetIO().FontGlobalScale;
             float       widthLeft = GetContentRegionAvail().x;
-            const char* endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+            const char* endLine = text_;
+            if( widthLeft > 0.0f )
+            {
+                endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+            }
+
+            if( endLine > text_ && endLine <= text_end_ )
+            {
+                if( IsCharInsideWord( *endLine ) )
+                {
+                    // see if we can do a better cut.
+                    float       widthNextLine = GetContentRegionMax().x;
+                    const char* endNextLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthNextLine );
+                    if( endNextLine == text_end_ || ( endNextLine <= text_end_ && !IsCharInsideWord( *endNextLine ) ) )
+                    {
+                        // can possibly do better if go to next line
+                        endLine = text_;
+                    }
+                }
+            }
             bool bHovered = RenderLinkText( text_, endLine, link_, markdown_, mdConfig_, linkHoverStart_ );
             if( bIndentToHere_ )
             {
