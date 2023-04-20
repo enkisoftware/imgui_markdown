@@ -880,7 +880,7 @@ namespace ImGui
                 endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
             }
 
-            if( endLine > text_ && endLine <= text_end_ )
+            if( endLine > text_ && endLine < text_end_ )
             {
                 if( IsCharInsideWord( *endLine ) )
                 {
