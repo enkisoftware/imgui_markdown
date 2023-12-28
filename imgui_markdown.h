@@ -436,6 +436,7 @@ namespace ImGui
             HAS_SQUARE_BRACKET_OPEN,
             HAS_SQUARE_BRACKETS,
             HAS_SQUARE_BRACKETS_ROUND_BRACKET_OPEN,
+            HAS_ANGLE_BRACKET_OPEN,
         };
         LinkState state = NO_LINK;
         TextBlock text;
@@ -525,7 +526,6 @@ namespace ImGui
     inline void Markdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ )
     {
         static const char* linkHoverStart = NULL; // we need to preserve status of link hovering between frames
-        ImGuiStyle& style = ImGui::GetStyle();
         Line        line;
         Link        link;
         Emphasis    em;
@@ -598,13 +598,23 @@ namespace ImGui
             switch( link.state )
             {
             case Link::NO_LINK:
-                if( c == '[' && !line.isHeading ) // we do not support headings with links for now
+                if( !line.isHeading ) // we do not support headings with links for now
                 {
-                    link.state = Link::HAS_SQUARE_BRACKET_OPEN;
-                    link.text.start = i + 1;
-                    if( i > 0 && markdown_[i - 1] == '!' )
+                    if( c == '[' )
                     {
-                        link.isImage = true;
+                        link.state = Link::HAS_SQUARE_BRACKET_OPEN;
+                        link.text.start = i + 1;
+                        if( i > 0 && markdown_[i - 1] == '!' )
+                        {
+                            link.isImage = true;
+                        }
+                    }
+                    else if( c == '<' )
+                    {
+                        link.state = Link::HAS_ANGLE_BRACKET_OPEN;
+                        link.text.start = i + 1;
+                        link.url.start = i + 1;
+                        // I don't think autolinks have image support
                     }
                 }
                 break;
@@ -681,8 +691,30 @@ namespace ImGui
                     // reset the link by reinitializing it
                     link = Link();
                     line.lastRenderPosition = i;
-                    break;
+                    
                 }
+                break;
+
+            case Link::HAS_ANGLE_BRACKET_OPEN:
+                if( c == '>' )
+                {
+                    // reset emphasis status, we do not support emphasis around links for now
+                    em = Emphasis();
+                    // render previous line content
+                    line.lineEnd = link.text.start - 1;
+                    RenderLine( markdown_, line, textRegion, mdConfig_ );
+                    line.leadSpaceCount = 0;
+                    link.text.stop = i;
+                    link.url.stop = i;
+                    line.isUnorderedListStart = false;    // the following text shouldn't have bullets
+                    ImGui::SameLine( 0.0f, 0.0f );
+                    textRegion.RenderLinkTextWrapped( markdown_ + link.text.start, markdown_ + link.text.start + link.text.size(), link, markdown_, mdConfig_, &linkHoverStart, false );
+                    ImGui::SameLine( 0.0f, 0.0f );
+                    // reset the link by reinitializing it
+                    link = Link();
+                    line.lastRenderPosition = i;
+                }
+                break;
             }
 
             // Test to see if we have emphasis styling
