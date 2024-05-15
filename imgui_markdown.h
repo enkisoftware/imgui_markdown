@@ -306,8 +306,6 @@ namespace ImGui
     {   
         ImFont*                 font;                               // ImGui font
         bool                    separator;                          // if true, an underlined separator is drawn after the header
-        float                   spaceBefore = 20.0f;                // Space created before rendering the header
-        float                   spaceAfter = 10.0f;                 // Space created after rendering the header
     };
 
     // Configuration struct for Markdown
@@ -987,18 +985,18 @@ namespace ImGui
                 {
                     ImGui::PushFont( fmt.font );
                 }
-                ImGui::Spacing( fmt.spaceBefore );
+                ImGui::NewLine();
             }
             else
             {
                 if( fmt.separator )
                 {
                     ImGui::Separator();
-                    ImGui::Spacing( fmt.spaceAfter );
+                    ImGui::NewLine();
                 }
                 else
                 {
-                    ImGui::Spacing( fmt.spaceAfter );
+                    ImGui::NewLine();
                 }
                 if( fmt.font )
                 {
