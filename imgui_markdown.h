@@ -306,8 +306,8 @@ namespace ImGui
     {   
         ImFont*                 font;                               // ImGui font
         bool                    separator;                          // if true, an underlined separator is drawn after the header
-	float                   spaceBefore = 20.0f;                // Space created before rendering the header
-        float                   spaceAfter = 10.0f;                 // Space created after rendering the header
+	    float                   spaceBefore = -1.0f;                // Space created before rendering the header
+        float                   spaceAfter = -1.0f;                 // Space created after rendering the header
     };
 
     // Configuration struct for Markdown
@@ -987,18 +987,40 @@ namespace ImGui
                 {
                     ImGui::PushFont( fmt.font );
                 }
-                ImGui::Spacing( fmt.spaceBefore );
+                if (fmt.spaceBefore == -1.0f)
+                {
+                    ImGui::NewLine();
+                }
+                else
+                {
+                    ImGui::Spacing( fmt.spaceBefore );
+                }
             }
             else
             {
                 if( fmt.separator )
                 {
                     ImGui::Separator();
-                    ImGui::Spacing( fmt.spaceAfter );
+                    
+                    if (fmt.spaceAfter == -1.0f)
+                    {
+                        ImGui::NewLine();
+                    }
+                    else
+                    {
+                        ImGui::Spacing( fmt.spaceAfter );
+                    }
                 }
                 else
                 {
-                    ImGui::Spacing( fmt.spaceAfter );
+                    if (fmt.spaceAfter == -1.0f)
+                    {
+                        ImGui::NewLine();
+                    }
+                    else
+                    {
+                        ImGui::Spacing( fmt.spaceAfter );
+                    }
                 }
                 if( fmt.font )
                 {
