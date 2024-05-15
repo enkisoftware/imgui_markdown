@@ -987,6 +987,7 @@ namespace ImGui
                 {
                     ImGui::PushFont( fmt.font );
                 }
+
                 if (fmt.spaceBefore == -1.0f)
                 {
                     ImGui::NewLine();
@@ -1001,27 +1002,17 @@ namespace ImGui
                 if( fmt.separator )
                 {
                     ImGui::Separator();
-                    
-                    if (fmt.spaceAfter == -1.0f)
-                    {
-                        ImGui::NewLine();
-                    }
-                    else
-                    {
-                        ImGui::Spacing( fmt.spaceAfter );
-                    }
+                }
+
+                if (fmt.spaceAfter == -1.0f)
+                {
+                    ImGui::NewLine();
                 }
                 else
                 {
-                    if (fmt.spaceAfter == -1.0f)
-                    {
-                        ImGui::NewLine();
-                    }
-                    else
-                    {
-                        ImGui::Spacing( fmt.spaceAfter );
-                    }
+                    ImGui::Spacing( fmt.spaceAfter );
                 }
+
                 if( fmt.font )
                 {
                     ImGui::PopFont();
