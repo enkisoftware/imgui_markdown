@@ -48,7 +48,7 @@ imgui_markdown currently supports the following markdown functionality:
 
 Syntax
 
-Wrapping: 
+Wrapping:
 Text wraps automatically. To add a new line, use 'Return'.
 
 Headers:
@@ -62,13 +62,13 @@ _emphasis_
 **strong emphasis**
 __strong emphasis__
 
-Indents: 
+Indents:
 On a new line, at the start of the line, add two spaces per indent.
   Indent level 1
     Indent level 2
 
-Unordered lists: 
-On a new line, at the start of the line, add two spaces, an asterisks and a space. 
+Unordered lists:
+On a new line, at the start of the line, add two spaces, an asterisks and a space.
 For nested lists, add two additional spaces in front of the asterisk per list level increment.
   * Unordered List level 1
     * Unordered List level 2
@@ -104,7 +104,7 @@ static ImFont* H1 = NULL;
 static ImFont* H2 = NULL;
 static ImFont* H3 = NULL;
 
-static ImGui::MarkdownConfig mdConfig; 
+static ImGui::MarkdownConfig mdConfig;
 
 
 void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
@@ -158,7 +158,7 @@ void ExampleMarkdownFormatCallback( const ImGui::MarkdownFormatInfo& markdownFor
     // Call the default first so any settings can be overwritten by our implementation.
     // Alternatively could be called or not called in a switch statement on a case by case basis.
     // See defaultMarkdownFormatCallback definition for furhter examples of how to use it.
-    ImGui::defaultMarkdownFormatCallback( markdownFormatInfo_, start_ );        
+    ImGui::defaultMarkdownFormatCallback( markdownFormatInfo_, start_ );
 
     switch( markdownFormatInfo_.type )
     {
@@ -252,7 +252,7 @@ struct MarkdownTooltipCallbackData                              // for tooltips
   MarkdownLinkCallbackData linkData;
   const char*              linkIcon;
 };
-    
+
 struct MarkdownImageData
 {
   bool                    isValid = false;                    // if true, will draw the image
@@ -307,7 +307,7 @@ struct MarkdownHeadingFormat
   ImFont*                 font;                               // ImGui font
   bool                    separator;                          // if true, an underlined separator is drawn after the header
   float                   spaceBefore = 20.0f;                // Space created before rendering the header
-  float                   spaceAfter = 10.0f;                 // Space created after rendering the header
+  float                   spaceAfter = 5.0f;                  // Space created after rendering the header
 };
 
 // Configuration struct for Markdown
