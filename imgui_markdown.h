@@ -263,6 +263,7 @@ namespace ImGui
         ImVec2                  uv1 = ImVec2( 1, 1 );               // see ImGui::Image
         ImVec4                  tint_col = ImVec4( 1, 1, 1, 1 );    // see ImGui::Image
         ImVec4                  border_col = ImVec4( 0, 0, 0, 0 );  // see ImGui::Image
+        ImVec4                  bg_col = ImVec4( 0, 0, 0, 0 );      // see ImGui::Image
     };
 
     enum class MarkdownFormatType
@@ -653,7 +654,18 @@ namespace ImGui
                             useLinkCallback = imageData.useLinkCallback;
                             if( imageData.isValid )
                             {
+#if IMGUI_VERSION_NUM < 19185
+                                if( imageData.bg_col.w > 0.0f )
+                                {
+                                    ImVec2 p = ImGui::GetCursorScreenPos();
+                                    ImGui::GetWindowDrawList()->AddRectFilled( p, ImVec2( p.x + imageData.size.x, p.y + imageData.size.y ), ImGui::GetColorU32( imageData.bg_col ));
+                                }
                                 ImGui::Image( imageData.user_texture_id, imageData.size, imageData.uv0, imageData.uv1, imageData.tint_col, imageData.border_col );
+#else
+                                ImGui::PushStyleColor( ImGuiCol_Border, imageData.border_col );
+                                ImGui::ImageWithBg( imageData.user_texture_id, imageData.size, imageData.uv0, imageData.uv1, imageData.bg_col, imageData.tint_col );
+                                ImGui::PopStyleColor();
+#endif
                                 drawnImage = true;
                             }
                         }
