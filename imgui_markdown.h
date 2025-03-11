@@ -745,6 +745,9 @@ namespace ImGui
                 {
                     break;
                 }
+            #if __cplusplus >= 201703L
+                  [[fallthrough]];
+            #endif
 			case Emphasis::RIGHT:
 				if( em.sym == c )
                 {
