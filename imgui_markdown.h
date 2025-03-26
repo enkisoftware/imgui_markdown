@@ -2,15 +2,15 @@
 
 // License: zlib
 // Copyright (c) 2019 Juliette Foucaut & Doug Binks
-// 
+//
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-// 
+//
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-// 
+//
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -45,10 +45,10 @@ imgui_markdown currently supports the following markdown functionality:
  - Link
  - Image
  - Horizontal rule
- 
+
 Syntax
 
-Wrapping: 
+Wrapping:
 Text wraps automatically. To add a new line, use 'Return'.
 
 Headers:
@@ -62,13 +62,13 @@ _emphasis_
 **strong emphasis**
 __strong emphasis__
 
-Indents: 
+Indents:
 On a new line, at the start of the line, add two spaces per indent.
   Indent level 1
     Indent level 2
 
-Unordered lists: 
-On a new line, at the start of the line, add two spaces, an asterisks and a space. 
+Unordered lists:
+On a new line, at the start of the line, add two spaces, an asterisks and a space.
 For nested lists, add two additional spaces in front of the asterisk per list level increment.
   * Unordered List level 1
     * Unordered List level 2
@@ -104,7 +104,7 @@ static ImFont* H1 = NULL;
 static ImFont* H2 = NULL;
 static ImFont* H3 = NULL;
 
-static ImGui::MarkdownConfig mdConfig; 
+static ImGui::MarkdownConfig mdConfig;
 
 
 void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
@@ -126,7 +126,7 @@ inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData d
     imageData.useLinkCallback = false;
     imageData.user_texture_id = image;
     imageData.size =            ImVec2( 40.0f, 20.0f );
-    
+
     // For image resize when available size.x > image width, add
     ImVec2 const contentSize = ImGui::GetContentRegionAvail();
     if( imageData.size.x > contentSize.x )
@@ -158,8 +158,8 @@ void ExampleMarkdownFormatCallback( const ImGui::MarkdownFormatInfo& markdownFor
     // Call the default first so any settings can be overwritten by our implementation.
     // Alternatively could be called or not called in a switch statement on a case by case basis.
     // See defaultMarkdownFormatCallback definition for furhter examples of how to use it.
-    ImGui::defaultMarkdownFormatCallback( markdownFormatInfo_, start_ );        
-       
+    ImGui::defaultMarkdownFormatCallback( markdownFormatInfo_, start_ );
+
     switch( markdownFormatInfo_.type )
     {
     // example: change the colour of heading level 2
@@ -252,7 +252,7 @@ namespace ImGui
         MarkdownLinkCallbackData linkData;
         const char*              linkIcon;
     };
-    
+
     struct MarkdownImageData
     {
         bool                    isValid = false;                    // if true, will draw the image
@@ -283,7 +283,7 @@ namespace ImGui
         const MarkdownConfig*   config  = NULL;
     };
 
-    typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );    
+    typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );
     typedef void                MarkdownTooltipCallback( MarkdownTooltipCallbackData data );
 
     inline void defaultMarkdownTooltipCallback( MarkdownTooltipCallbackData data_ )
@@ -304,7 +304,7 @@ namespace ImGui
     inline void defaultMarkdownFormatCallback( const MarkdownFormatInfo& markdownFormatInfo_, bool start_ );
 
     struct MarkdownHeadingFormat
-    {   
+    {
         ImFont*                 font;                               // ImGui font
         bool                    separator;                          // if true, an underlined separator is drawn after the header
     };
@@ -322,7 +322,7 @@ namespace ImGui
         MarkdownImageCallback*  imageCallback = NULL;
         const char*             linkIcon = "";                      // icon displayd in link tooltip
         MarkdownHeadingFormat   headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
-        void*                   userData = NULL;        
+        void*                   userData = NULL;
         MarkdownFormalCallback* formatCallback = defaultMarkdownFormatCallback;
     };
 
@@ -374,7 +374,7 @@ namespace ImGui
                 text_ = endLine;
                 if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
                 endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
-                if( text_ == endLine ) 
+                if( text_ == endLine )
                 {
                     endLine++;
                 }
@@ -389,7 +389,7 @@ namespace ImGui
             RenderTextWrapped( text_, text_end_, true );
         }
 
-        bool RenderLinkText( const char* text_, const char* text_end_, const Link& link_, 
+        bool RenderLinkText( const char* text_, const char* text_end_, const Link& link_,
             const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_ );
 
         void RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_,
@@ -470,8 +470,8 @@ namespace ImGui
         // indent
         int indentStart = 0;
         if( line_.isUnorderedListStart )    // ImGui unordered list render always adds one indent
-        { 
-            indentStart = 1; 
+        {
+            indentStart = 1;
         }
         for( int j = indentStart; j < line_.leadSpaceCount / 2; ++j )    // add indents
         {
@@ -521,7 +521,7 @@ namespace ImGui
             ImGui::Unindent();
         }
     }
-    
+
     // render markdown
     inline void Markdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ )
     {
@@ -774,7 +774,7 @@ namespace ImGui
 					    em = Emphasis();
                     }
                     continue;
-				} 
+				}
                 else
                 {
                     em.state = Emphasis::NONE;
@@ -817,7 +817,7 @@ namespace ImGui
                 line.lastRenderPosition = i;
 
                 textRegion.ResetIndent();
-                
+
                 // reset the link
                 link = Link();
             }
@@ -925,7 +925,7 @@ namespace ImGui
                 text_ = endLine;
                 if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
                 endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
-                if( text_ == endLine ) 
+                if( text_ == endLine )
                 {
                     endLine++;
                 }
@@ -960,7 +960,7 @@ namespace ImGui
                 else
 			    {
                     ImGui::PopStyleColor();
-			    }              
+			    }
             }
             else
             {
