@@ -442,6 +442,7 @@ namespace ImGui
         TextBlock text;
         TextBlock url;
         bool isImage = false;
+        int num_square_brackets_open = 0;
         int num_brackets_open = 0;
     };
 
@@ -603,6 +604,7 @@ namespace ImGui
                 {
                     link.state = Link::HAS_SQUARE_BRACKET_OPEN;
                     link.text.start = i + 1;
+                    link.num_square_brackets_open = 1;
                     if( i > 0 && markdown_[i - 1] == '!' )
                     {
                         link.isImage = true;
@@ -610,7 +612,15 @@ namespace ImGui
                 }
                 break;
             case Link::HAS_SQUARE_BRACKET_OPEN:
-                if( c == ']' )
+                if( c == '[' )
+                {
+                    ++link.num_square_brackets_open;
+                }
+                else if( c == ']' )
+                {
+                    --link.num_square_brackets_open;
+                }
+                if( link.num_square_brackets_open == 0 )
                 {
                     link.state = Link::HAS_SQUARE_BRACKETS;
                     link.text.stop = i;
