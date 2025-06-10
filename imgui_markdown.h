@@ -281,6 +281,8 @@ namespace ImGui
         int32_t                 level   = 0;                               // Set for headings: 1 for H1, 2 for H2 etc.
         bool                    itemHovered = false;                       // Currently only set for links when mouse hovered, only valid when start_ == false
         const MarkdownConfig*   config  = NULL;
+        const char*             text    = NULL;
+        int32_t                 textLength = 0;
     };
 
     typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );
@@ -494,8 +496,10 @@ namespace ImGui
         {
             formatInfo.level = line_.headingCount;
             formatInfo.type = MarkdownFormatType::HEADING;
-            mdConfig_.formatCallback( formatInfo, true );
             const char* text = markdown_ + textStart + 1;
+            formatInfo.text = text;
+            formatInfo.textLength = textSize - 1;
+            mdConfig_.formatCallback( formatInfo, true );
             textRegion_.RenderTextWrapped( text, text + textSize - 1 );
         }
 		else if( line_.isEmphasis )         // render emphasis
