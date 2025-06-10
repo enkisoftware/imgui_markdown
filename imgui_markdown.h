@@ -308,6 +308,9 @@ namespace ImGui
     struct MarkdownHeadingFormat
     {
         ImFont*                 font;                               // ImGui font
+        #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability: https://github.com/ocornut/imgui/issues/8465#issuecomment-2701570771
+            float               fontSize = 0.0f;                    // Font size if using dynamic fonts
+        #endif
         bool                    separator;                          // if true, an underlined separator is drawn after the header
     };
 
@@ -1002,7 +1005,7 @@ namespace ImGui
 			    {
 				    if( fmt.font )
 				    {
-					    ImGui::PushFont( fmt.font );
+					    ImGui::PushFont( fmt.font ); // uses current font size
 				    }
 			    }
                 else
@@ -1030,7 +1033,11 @@ namespace ImGui
             {
                 if( fmt.font  )
                 {
-                    ImGui::PushFont( fmt.font );
+                    #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability: https://github.com/ocornut/imgui/issues/8465#issuecomment-2701570771
+                        ImGui::PushFont( fmt.font, fmt.fontSize > 0.0f ? fmt.fontSize : fmt.font->LegacySize );
+                    #else
+                        ImGui::PushFont( fmt.font );
+                    #endif
                 }
                 ImGui::NewLine();
             }
