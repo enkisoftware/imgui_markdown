@@ -1002,7 +1002,12 @@ namespace ImGui
 			    {
 				    if( fmt.font )
 				    {
-					    ImGui::PushFont( fmt.font );
+#if IMGUI_VERSION_NUM < 19200
+					    ImGui::PushFont( fmt.font);
+#else
+					    ImGui::PushFont( fmt.font, 0.0f ); // change font and keep the size.
+#endif // IMGUI_VERSION_NUM >= 19200
+
 				    }
 			    }
                 else
@@ -1030,7 +1035,11 @@ namespace ImGui
             {
                 if( fmt.font  )
                 {
+#if IMGUI_VERSION_NUM < 19200
                     ImGui::PushFont( fmt.font );
+#else
+                    ImGui::PushFont( fmt.font, 0.0f ); // change font and keep the size.
+#endif // IMGUI_VERSION_NUM < 19200
                 }
                 ImGui::NewLine();
             }
