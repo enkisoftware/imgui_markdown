@@ -2,6 +2,8 @@ Support development of imgui_markdown through [GitHub Sponsors](https://github.c
 
 [<img src="https://img.shields.io/static/v1?logo=github&label=Github&message=Sponsor&color=#ea4aaa" width="200"/>](https://github.com/sponsors/dougbinks)    [<img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" alt="Become a Patron" width="150"/>](https://www.patreon.com/enkisoftware)
 
+*Note:* development happens on the `dev` branch and is merged to the `main` branch when complete. Please check this branch prior to submitting PRs and issues, and preferably base PRs on `dev`.
+
 # imgui_markdown
 
 ## Markdown For Dear ImGui
