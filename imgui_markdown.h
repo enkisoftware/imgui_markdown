@@ -308,10 +308,10 @@ namespace ImGui
     struct MarkdownHeadingFormat
     {
         ImFont*                 font;                               // ImGui font
-        #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability: https://github.com/ocornut/imgui/issues/8465#issuecomment-2701570771
-            float               fontSize = 0.0f;                    // Font size if using dynamic fonts
-        #endif
         bool                    separator;                          // if true, an underlined separator is drawn after the header
+        #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability: https://github.com/ocornut/imgui/issues/8465#issuecomment-2701570771
+        float                   fontSize = 0.0f;                    // Font size if using dynamic fonts
+        #endif
     };
 
     // Configuration struct for Markdown
