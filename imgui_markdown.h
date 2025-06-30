@@ -1005,7 +1005,11 @@ namespace ImGui
 			    {
 				    if( fmt.font )
 				    {
-					    ImGui::PushFont( fmt.font ); // uses current font size
+                        #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability: 
+					        ImGui::PushFont( fmt.font, 0.0f ); // Change font and keep current size
+                        #else
+					        ImGui::PushFont( fmt.font );
+                        #endif
 				    }
 			    }
                 else
