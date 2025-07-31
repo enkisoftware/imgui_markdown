@@ -92,7 +92,7 @@ Non exhaustive
 ```Cpp
 
 #include "ImGui.h"                // https://github.com/ocornut/imgui
-#include "imgui_markdown.h"       // https://github.com/juliettef/imgui_markdown
+#include "imgui_markdown.h"       // https://github.com/enkisoftware/imgui_markdown
 #include "IconsFontAwesome5.h"    // https://github.com/juliettef/IconFontCppHeaders
 
 // Following includes for Windows LinkCallback
@@ -124,11 +124,11 @@ void LinkCallback( ImGui::MarkdownLinkCallbackData data_ )
 inline ImGui::MarkdownImageData ImageCallback( ImGui::MarkdownLinkCallbackData data_ )
 {
     // In your application you would load an image based on data_ input. Here we just use the imgui font texture.
-	#ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability
-		ImTextureID image = ImGui::GetIO().Fonts->TexRef.GetTexID();
-	#else
-		ImTextureID image = ImGui::GetIO().Fonts->TexID;
-	#endif
+    #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability
+        ImTextureID image = ImGui::GetIO().Fonts->TexRef.GetTexID();
+    #else
+        ImTextureID image = ImGui::GetIO().Fonts->TexID;
+    #endif
     // > C++14 can use ImGui::MarkdownImageData imageData{ true, false, image, ImVec2( 40.0f, 20.0f ) };
     ImGui::MarkdownImageData imageData;
     imageData.isValid =         true;
