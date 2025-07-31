@@ -158,12 +158,12 @@ void LoadFonts()
     H2 = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSize );
     H3 = H2;
     // bold heading H1
-	#ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability
+    #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability
         H1 = H2; // size can be set in headingFormats
-	#else
-		float fontSizeH1 = fontSize * 1.1f;
-		H1 = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSizeH1 );
-	#endif
+    #else
+        float fontSizeH1 = fontSize * 1.1f;
+        H1 = io.Fonts->AddFontFromFileTTF( "myfont-bold.ttf", fontSizeH1 );
+    #endif
 
 }
 
@@ -207,15 +207,15 @@ void Markdown( const std::string& markdown_ )
     mdConfig.tooltipCallback =      NULL;
     mdConfig.imageCallback =        ImageCallback;
     mdConfig.linkIcon =             ICON_FA_LINK;
-	#ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability
-		mdConfig.headingFormats[0] =    { H1, true,  fontSize * 1.1f };
-		mdConfig.headingFormats[1] =    { H2, true,  fontSize };
-		mdConfig.headingFormats[2] =    { H3, false, fontSize };
-	#else
-		mdConfig.headingFormats[0] =    { H1, true };
-		mdConfig.headingFormats[1] =    { H2, true };
-		mdConfig.headingFormats[2] =    { H3, false };
-	#endif
+    #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability
+        mdConfig.headingFormats[0] =    { H1, true,  fontSize * 1.1f };
+        mdConfig.headingFormats[1] =    { H2, true,  fontSize };
+        mdConfig.headingFormats[2] =    { H3, false, fontSize };
+    #else
+        mdConfig.headingFormats[0] =    { H1, true };
+        mdConfig.headingFormats[1] =    { H2, true };
+        mdConfig.headingFormats[2] =    { H3, false };
+    #endif
 
     mdConfig.userData =             NULL;
     mdConfig.formatCallback =       ExampleMarkdownFormatCallback;
