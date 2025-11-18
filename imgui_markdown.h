@@ -544,7 +544,15 @@ namespace ImGui
     // render markdown
     inline void Markdown( const char* markdown_, size_t markdownLength_, const MarkdownConfig& mdConfig_ )
     {
-        static const char* linkHoverStart = NULL; // we need to preserve status of link hovering between frames
+        static const char* s_linkHoverStart = NULL; // we need to preserve status of link hovering between frames
+        static ImGuiID     s_linkHoverID    = 0;
+        const char* linkHoverStart = NULL;
+        ImGuiID linkHoverID = ImGui::GetID("MDLHS");
+        if( linkHoverID == s_linkHoverID )
+        {
+            linkHoverStart = s_linkHoverStart;
+        }
+
         ImGuiStyle& style = ImGui::GetStyle();
         Line        line;
         Link        link;
@@ -859,6 +867,12 @@ namespace ImGui
                 }
                 RenderLine( markdown_, line, textRegion, mdConfig_ );
             }
+        }
+
+        if( NULL != linkHoverStart || linkHoverID == s_linkHoverID )
+        {
+            s_linkHoverStart = linkHoverStart;
+            s_linkHoverID    = linkHoverID;
         }
     }
 
