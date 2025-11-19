@@ -356,48 +356,7 @@ namespace ImGui
             ResetIndent();
         }
 
-        // ImGui::TextWrapped will wrap at the starting position
-        // so to work around this we render using our own wrapping for the first line
-        void RenderTextWrapped( const char* text_, const char* text_end_, bool bIndentToHere_ = false )
-        {
-            #if IMGUI_VERSION_NUM >= 19197
-                float       fontSize  = ImGui::GetFontSize();
-            #else
-                float       scale = ImGui::GetIO().FontGlobalScale;
-            #endif
-            float       widthLeft = GetContentRegionAvail().x;
-            #if IMGUI_VERSION_NUM >= 19197
-                const char* endLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthLeft );
-            #else
-                const char* endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
-            #endif
-            ImGui::TextUnformatted( text_, endLine );
-            if( bIndentToHere_ )
-            {
-                float indentNeeded = GetContentRegionAvail().x - widthLeft;
-                if( indentNeeded )
-                {
-                    ImGui::Indent( indentNeeded );
-                    indentX += indentNeeded;
-                }
-            }
-            widthLeft = GetContentRegionAvail().x;
-            while( endLine < text_end_ )
-            {
-                text_ = endLine;
-                if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
-                #if IMGUI_VERSION_NUM >= 19197
-                    endLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthLeft );
-                #else
-                    endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
-                #endif
-                if( text_ == endLine )
-                {
-                    endLine++;
-                }
-                ImGui::TextUnformatted( text_, endLine );
-            }
-        }
+        void RenderTextWrapped( const char* text_, const char* text_end_, bool bIndentToHere_ = false );
 
         void RenderListTextWrapped( const char* text_, const char* text_end_ )
         {
@@ -915,6 +874,72 @@ namespace ImGui
     inline bool IsCharInsideWord( char c_ )
     {
         return c_ != ' ' && c_ != '.' && c_ != ',' && c_ != ';' && c_ != '!' && c_ != '?' && c_ != '\"';
+    }
+
+    // ImGui::TextWrapped will wrap at the starting position
+    // so to work around this we render using our own wrapping for the first line
+    inline void TextRegion::RenderTextWrapped( const char* text_, const char* text_end_, bool bIndentToHere_ )
+    {
+    #if IMGUI_VERSION_NUM >= 19197
+        float       fontSize  = ImGui::GetFontSize();
+    #else
+        float       scale = ImGui::GetIO().FontGlobalScale;
+    #endif
+        float       widthLeft = GetContentRegionAvail().x;
+        const char* endLine = text_;
+        if( widthLeft > 0.0f )
+        {
+        #if IMGUI_VERSION_NUM >= 19197
+            endLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthLeft );
+        #else
+            endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+        #endif
+        }
+
+        if( endLine > text_ && endLine < text_end_ )
+        {
+            if( IsCharInsideWord( *endLine ) )
+            {
+                // see if we can do a better cut.
+                float       widthNextLine = widthLeft + GetCursorScreenPos().x - GetWindowPos().x; // was GetContentRegionMax().x on IMGUI_VERSION_NUM < 19099
+            #if IMGUI_VERSION_NUM >= 19197
+                const char* endNextLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthNextLine );
+            #else
+                const char* endNextLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+            #endif
+                if( endNextLine == text_end_ || ( endNextLine <= text_end_ && !IsCharInsideWord( *endNextLine ) ) )
+                {
+                        // can possibly do better if go to next line
+                    endLine = text_;
+                }
+            }
+        }
+        ImGui::TextUnformatted( text_, endLine );
+        if( bIndentToHere_ )
+        {
+            float indentNeeded = GetContentRegionAvail().x - widthLeft;
+            if( indentNeeded )
+            {
+                ImGui::Indent( indentNeeded );
+                indentX += indentNeeded;
+            }
+        }
+        widthLeft = GetContentRegionAvail().x;
+        while( endLine < text_end_ )
+        {
+            text_ = endLine;
+            if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
+        #if IMGUI_VERSION_NUM >= 19197
+            endLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthLeft );
+        #else
+            endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+        #endif
+            if( text_ == endLine )
+            {
+                endLine++;
+            }
+            ImGui::TextUnformatted( text_, endLine );
+        }
     }
 
     inline void TextRegion::RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_,
