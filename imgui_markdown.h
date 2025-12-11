@@ -536,6 +536,17 @@ namespace ImGui
                     ++line.leadSpaceCount;
                     continue;
                 }
+                else if ( c == '\n' )
+                {
+                    // Discard LF newlines by markdown spec
+                    continue;
+                }
+                else if ( ( c == '\r' ) && ( (int)markdownLength_ > i + 1 ) && ( markdown_[i + 1] == '\n' ) )
+                {
+                    // Discard CRLF newlines by markdown spec
+                    i += 1;
+                    continue;
+                }
                 else
                 {
                     line.isLeadingSpace = false;
@@ -1081,6 +1092,10 @@ namespace ImGui
             }
             if( start_ )
             {
+                if ( !markdownFormatInfo_.firstLine )
+                {
+                    ImGui::NewLine();
+                }
                 if( fmt.font  )
                 {
                     #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability: https://github.com/ocornut/imgui/issues/8465#issuecomment-2701570771
@@ -1089,20 +1104,21 @@ namespace ImGui
                         ImGui::PushFont( fmt.font );
                     #endif
                 }
-                if (!markdownFormatInfo_.firstLine) {
-                    ImGui::NewLine();
-                }
             }
             else
             {
                 if( fmt.separator )
                 {
+                    // In markdown the separator does not advance the cursor
+                    ImVec2 cursor = ImGui::GetCursorPos();
                     ImGui::Separator();
+                    ImGui::SetCursorPos( cursor );
                 }
                 if( fmt.font )
                 {
                     ImGui::PopFont();
                 }
+                ImGui::NewLine();
             }
             break;
         }
