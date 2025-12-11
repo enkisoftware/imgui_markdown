@@ -519,6 +519,7 @@ namespace ImGui
         Link        link;
         Emphasis    em;
         TextRegion  textRegion;
+        int concurrentEmptyNewlines = 0;
 
         bool firstLine = true;
 
@@ -539,11 +540,13 @@ namespace ImGui
                 else if ( c == '\n' )
                 {
                     // Discard LF newlines by markdown spec
+                    concurrentEmptyNewlines++;
                     continue;
                 }
                 else if ( ( c == '\r' ) && ( (int)markdownLength_ > i + 1 ) && ( markdown_[i + 1] == '\n' ) )
                 {
                     // Discard CRLF newlines by markdown spec
+                    concurrentEmptyNewlines++;
                     i += 1;
                     continue;
                 }
@@ -806,6 +809,10 @@ namespace ImGui
                 }
                 else
                 {
+                    // In markdown spec, 2 or more consecutive newlines gets converted to a single blank line
+                    if (concurrentEmptyNewlines >= 2) {
+                        ImGui::NewLine();
+                    }
                     // render the line: multiline emphasis requires a complex implementation so not supporting
                     RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
                 }
@@ -824,6 +831,7 @@ namespace ImGui
                 link = Link();
 
                 firstLine = false;
+                concurrentEmptyNewlines = 0;
             }
         }
 
