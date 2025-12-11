@@ -225,7 +225,6 @@ ___
 ===============================================================================
 */
 
-
 #include <stdint.h>
 
 namespace ImGui
@@ -283,6 +282,7 @@ namespace ImGui
         const MarkdownConfig*   config  = NULL;
         const char*             text    = NULL;
         int32_t                 textLength = 0;
+        bool                    firstLine = false;                         // true if this line of text is not the first (used for headings)
     };
 
     typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );
@@ -344,7 +344,7 @@ namespace ImGui
     struct TextRegion;
     struct Line;
     inline void UnderLine( ImColor col_ );
-    inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ );
+    inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_, bool firstLine );
 
     struct TextRegion
     {
@@ -441,7 +441,7 @@ namespace ImGui
         ImGui::GetWindowDrawList()->AddLine( min, max, col_, 1.0f );
     }
 
-    inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ )
+    inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_, bool firstLine )
     {
         // indent
         int indentStart = 0;
@@ -457,6 +457,7 @@ namespace ImGui
         // render
         MarkdownFormatInfo formatInfo;
         formatInfo.config = &mdConfig_;
+        formatInfo.firstLine = firstLine;
         int textStart = line_.lastRenderPosition + 1;
         int textSize = line_.lineEnd - textStart;
         if( line_.isUnorderedListStart )    // render unordered list
@@ -514,9 +515,12 @@ namespace ImGui
 
         ImGuiStyle& style = ImGui::GetStyle();
         Line        line;
+        Line        prevLine;
         Link        link;
         Emphasis    em;
         TextRegion  textRegion;
+
+        bool firstLine = true;
 
         char c = 0;
         for( int i=0; i < (int)markdownLength_; ++i )
@@ -625,7 +629,7 @@ namespace ImGui
                     em = Emphasis();
                     // render previous line content
                     line.lineEnd = link.text.start - ( link.isImage ? 2 : 1 );
-                    RenderLine( markdown_, line, textRegion, mdConfig_ );
+                    RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
                     line.leadSpaceCount = 0;
                     link.url.stop = i;
                     line.isUnorderedListStart = false;    // the following text shouldn't have bullets
@@ -744,7 +748,7 @@ namespace ImGui
                         if( lineEnd > line.lineStart )
                         {
                             line.lineEnd = lineEnd;
-                            RenderLine( markdown_, line, textRegion, mdConfig_ );
+                            RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
 						    ImGui::SameLine( 0.0f, 0.0f );
                             line.isUnorderedListStart = false;
                             line.leadSpaceCount = 0;
@@ -753,7 +757,7 @@ namespace ImGui
 						line.lastRenderPosition = em.text.start - 1;
                         line.lineStart = em.text.start;
 					    line.lineEnd = em.text.stop;
-					    RenderLine( markdown_, line, textRegion, mdConfig_ );
+					    RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
 					    ImGui::SameLine( 0.0f, 0.0f );
 					    line.isEmphasis = false;
 					    line.lastRenderPosition = i;
@@ -771,7 +775,7 @@ namespace ImGui
                         line.lineEnd = line.lineStart;
                         line.lineStart = start;
                         line.lastRenderPosition = start - 1;
-                        RenderLine(markdown_, line, textRegion, mdConfig_);
+                        RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
                         line.lineStart          = line.lineEnd;
                         line.lastRenderPosition = line.lineStart - 1;
                     }
@@ -792,10 +796,11 @@ namespace ImGui
                 else
                 {
                     // render the line: multiline emphasis requires a complex implementation so not supporting
-                    RenderLine( markdown_, line, textRegion, mdConfig_ );
+                    RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
                 }
 
                 // reset the line and emphasis state
+                prevLine = line;
 				line = Line();
                 em = Emphasis();
 
@@ -806,6 +811,8 @@ namespace ImGui
 
                 // reset the link
                 link = Link();
+
+                firstLine = false;
             }
         }
 
@@ -824,7 +831,7 @@ namespace ImGui
                 {
                     --line.lineEnd;
                 }
-                RenderLine( markdown_, line, textRegion, mdConfig_ );
+                RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
             }
         }
 
@@ -1082,18 +1089,15 @@ namespace ImGui
                         ImGui::PushFont( fmt.font );
                     #endif
                 }
-                ImGui::NewLine();
+                if (!markdownFormatInfo_.firstLine) {
+                    ImGui::NewLine();
+                }
             }
             else
             {
                 if( fmt.separator )
                 {
                     ImGui::Separator();
-                    ImGui::NewLine();
-                }
-                else
-                {
-                    ImGui::NewLine();
                 }
                 if( fmt.font )
                 {
@@ -1124,5 +1128,4 @@ namespace ImGui
             break;
         }
     }
-
 }
