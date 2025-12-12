@@ -541,12 +541,14 @@ namespace ImGui
                 {
                     // Discard LF newlines by markdown spec
                     concurrentEmptyNewlines++;
+                    line.lineStart += 1;
                     continue;
                 }
                 else if ( ( c == '\r' ) && ( (int)markdownLength_ > i + 1 ) && ( markdown_[i + 1] == '\n' ) )
                 {
                     // Discard CRLF newlines by markdown spec
                     concurrentEmptyNewlines++;
+                    line.lineStart += 2;
                     i += 1;
                     continue;
                 }
@@ -810,7 +812,8 @@ namespace ImGui
                 else
                 {
                     // In markdown spec, 2 or more consecutive newlines gets converted to a single blank line
-                    if (concurrentEmptyNewlines >= 2) {
+                    // The first newline is always digested so we check for 1 or more here
+                    if (concurrentEmptyNewlines >= 1) {
                         ImGui::NewLine();
                     }
                     // render the line: multiline emphasis requires a complex implementation so not supporting
