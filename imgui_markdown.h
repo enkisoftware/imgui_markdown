@@ -520,6 +520,7 @@ namespace ImGui
         Emphasis    em;
         TextRegion  textRegion;
         int concurrentEmptyNewlines = 0;
+        bool appliedExtraNewline = false;
 
         bool firstLine = true;
 
@@ -599,6 +600,13 @@ namespace ImGui
                         }
                     }
                 }
+            }
+
+            // In markdown spec, 2 or more consecutive newlines gets converted to a single blank
+            // line The first newline is always digested so we check for 1 or more here
+            if (!appliedExtraNewline && !prevLine.isHeading && concurrentEmptyNewLines >= 1) {
+                ImGui::NewLine();
+                appliedExtraNewline = true;
             }
 
             // Test to see if we have a link
@@ -811,11 +819,6 @@ namespace ImGui
                 }
                 else
                 {
-                    // In markdown spec, 2 or more consecutive newlines gets converted to a single blank line
-                    // The first newline is always digested so we check for 1 or more here
-                    if (concurrentEmptyNewlines >= 1) {
-                        ImGui::NewLine();
-                    }
                     // render the line: multiline emphasis requires a complex implementation so not supporting
                     RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
                 }
@@ -835,6 +838,7 @@ namespace ImGui
 
                 firstLine = false;
                 concurrentEmptyNewlines = 0;
+                appliedExtraNewline = false;
             }
         }
 
