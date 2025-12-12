@@ -604,7 +604,7 @@ namespace ImGui
 
             // In markdown spec, 2 or more consecutive newlines gets converted to a single blank
             // line The first newline is always digested so we check for 1 or more here
-            if (!appliedExtraNewline && !prevLine.isHeading && concurrentEmptyNewLines >= 1) {
+            if (!appliedExtraNewline && !prevLine.isHeading && concurrentEmptyNewlines >= 1) {
                 ImGui::NewLine();
                 appliedExtraNewline = true;
             }
