@@ -282,7 +282,7 @@ namespace ImGui
         const MarkdownConfig*   config  = NULL;
         const char*             text    = NULL;
         int32_t                 textLength = 0;
-        bool                    firstLine = false;                         // true if this line of text is not the first (used for headings)
+        bool                    firstLine = false;                         // true if this line of text is the first (used for headings)
     };
 
     typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );
