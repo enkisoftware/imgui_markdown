@@ -1127,7 +1127,7 @@ namespace ImGui
             }
             if (start_)
             {
-                if ( 0 == ( markdownFormatInfo_.config->formatFlags & ImGuiMarkdownFormatFlags_NoNewLineIfHeadingFirstLine ) || !markdownFormatInfo_.firstLine )
+                if ( 0 == ( markdownFormatInfo_.config->formatFlags & ImGuiMarkdownFormatFlags_NoNewLineIfHeadingFirstLine ) )
                 {
                     ImGui::NewLine();
                 }
