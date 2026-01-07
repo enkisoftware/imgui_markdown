@@ -233,10 +233,10 @@ enum ImGuiMarkdownFormatFlags_
 {
     ImGuiMarkdownFormatFlags_None                        = 0,
     ImGuiMarkdownFormatFlags_DiscardExtraNewLines        = 1 << 0,  // (Accurate parsing) Provided markdown will discard all redundant newlines
-    ImGuiMarkdownFormatFlags_NoNewLineIfHeadingFirstLine = 1 << 1,  // (Accurate parsing) Provided markdown will not format a newline after the first line if it is a heading
+    ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading      = 1 << 1,  // (Accurate parsing) Provided markdown will not format a newline after the first line if it is a heading
     ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance     = 1 << 2,  // (Accurate parsing) Provided markdown will not advance to the next line after formatting a seperator
-    ImGuiMarkdownFormatFlags_GithubStyle                 = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineIfHeadingFirstLine | ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance,
-    ImGuiMarkdownFormatFlags_CommonMarkAll               = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineIfHeadingFirstLine | ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance,
+    ImGuiMarkdownFormatFlags_GithubStyle                 = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance,
+    ImGuiMarkdownFormatFlags_CommonMarkAll               = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance,
 };
 
 namespace ImGui
@@ -294,7 +294,6 @@ namespace ImGui
         const MarkdownConfig*   config  = NULL;
         const char*             text    = NULL;
         int32_t                 textLength = 0;
-        bool                    firstLine = false;                         // true if this line of text is the first (used for headings)
     };
 
     typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );
@@ -357,7 +356,7 @@ namespace ImGui
     struct TextRegion;
     struct Line;
     inline void UnderLine( ImColor col_ );
-    inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_, bool firstLine );
+    inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ );
 
     struct TextRegion
     {
@@ -454,7 +453,7 @@ namespace ImGui
         ImGui::GetWindowDrawList()->AddLine( min, max, col_, 1.0f );
     }
 
-    inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_, bool firstLine )
+    inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ )
     {
         // indent
         int indentStart = 0;
@@ -470,7 +469,6 @@ namespace ImGui
         // render
         MarkdownFormatInfo formatInfo;
         formatInfo.config = &mdConfig_;
-        formatInfo.firstLine = firstLine;
         int textStart = line_.lastRenderPosition + 1;
         int textSize = line_.lineEnd - textStart;
         if( line_.isUnorderedListStart )    // render unordered list
@@ -534,8 +532,6 @@ namespace ImGui
         TextRegion  textRegion;
         int concurrentEmptyNewlines = 0;
         bool appliedExtraNewline = false;
-
-        bool firstLine = true;
 
         char c = 0;
         for( int i=0; i < (int)markdownLength_; ++i )
@@ -673,7 +669,7 @@ namespace ImGui
                     em = Emphasis();
                     // render previous line content
                     line.lineEnd = link.text.start - ( link.isImage ? 2 : 1 );
-                    RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
+                    RenderLine( markdown_, line, textRegion, mdConfig_ );
                     line.leadSpaceCount = 0;
                     link.url.stop = i;
                     line.isUnorderedListStart = false;    // the following text shouldn't have bullets
@@ -792,7 +788,7 @@ namespace ImGui
                         if( lineEnd > line.lineStart )
                         {
                             line.lineEnd = lineEnd;
-                            RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
+                            RenderLine( markdown_, line, textRegion, mdConfig_ );
 						    ImGui::SameLine( 0.0f, 0.0f );
                             line.isUnorderedListStart = false;
                             line.leadSpaceCount = 0;
@@ -801,7 +797,7 @@ namespace ImGui
 						line.lastRenderPosition = em.text.start - 1;
                         line.lineStart = em.text.start;
 					    line.lineEnd = em.text.stop;
-					    RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
+					    RenderLine( markdown_, line, textRegion, mdConfig_ );
 					    ImGui::SameLine( 0.0f, 0.0f );
 					    line.isEmphasis = false;
 					    line.lastRenderPosition = i;
@@ -819,7 +815,7 @@ namespace ImGui
                         line.lineEnd = line.lineStart;
                         line.lineStart = start;
                         line.lastRenderPosition = start - 1;
-                        RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
+                        RenderLine( markdown_, line, textRegion, mdConfig_ );
                         line.lineStart          = line.lineEnd;
                         line.lastRenderPosition = line.lineStart - 1;
                     }
@@ -840,7 +836,7 @@ namespace ImGui
                 else
                 {
                     // render the line: multiline emphasis requires a complex implementation so not supporting
-                    RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
+                    RenderLine( markdown_, line, textRegion, mdConfig_ );
                 }
 
                 // reset the line and emphasis state
@@ -856,7 +852,6 @@ namespace ImGui
                 // reset the link
                 link = Link();
 
-                firstLine = false;
                 concurrentEmptyNewlines = 0;
                 appliedExtraNewline = false;
             }
@@ -877,7 +872,7 @@ namespace ImGui
                 {
                     --line.lineEnd;
                 }
-                RenderLine( markdown_, line, textRegion, mdConfig_, firstLine );
+                RenderLine( markdown_, line, textRegion, mdConfig_ );
             }
         }
 
@@ -1127,7 +1122,7 @@ namespace ImGui
             }
             if (start_)
             {
-                if ( 0 == ( markdownFormatInfo_.config->formatFlags & ImGuiMarkdownFormatFlags_NoNewLineIfHeadingFirstLine ) )
+                if ( 0 == ( markdownFormatInfo_.config->formatFlags & ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading ) )
                 {
                     ImGui::NewLine();
                 }
