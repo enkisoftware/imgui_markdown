@@ -542,11 +542,6 @@ namespace ImGui
             // If we're at the beginning of the line, count any spaces
             if( line.isLeadingSpace )
             {
-                if( c == ' ' )
-                {
-                    ++line.leadSpaceCount;
-                    continue;
-                }
                 if ( (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_DiscardExtraNewLines) ) // Discard LF and CRLF newlines by markdown spec
                 {
                     if ( c == '\n' )
@@ -562,6 +557,12 @@ namespace ImGui
                         i += 1;
                         continue;
                     }
+                }
+
+                if( c == ' ' )
+                {
+                    ++line.leadSpaceCount;
+                    continue;
                 }
                 else
                 {
