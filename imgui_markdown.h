@@ -547,20 +547,17 @@ namespace ImGui
                     ++line.leadSpaceCount;
                     continue;
                 }
-                else if ( c == '\n' )
+                if ( (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_DiscardExtraNewLines) ) // Discard LF and CRLF newlines by markdown spec
                 {
-                    concurrentEmptyNewlines++;
-                    if ( (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_DiscardExtraNewLines) ) // Discard LF newlines by markdown spec
+                    if ( c == '\n' )
                     {
+                        concurrentEmptyNewlines++;
                         line.lineStart += 1;
                         continue;
                     }
-                }
-                else if ( ( c == '\r' ) && ( (int)markdownLength_ > i + 1 ) && ( markdown_[i + 1] == '\n' ) )
-                {
-                    concurrentEmptyNewlines++;
-                    if ( (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_DiscardExtraNewLines) ) // Discard CRLF newlines by markdown spec
+                    else if ( ( c == '\r' ) && ( (int)markdownLength_ > i + 1 ) && ( markdown_[i + 1] == '\n' ) )
                     {
+                        concurrentEmptyNewlines++;
                         line.lineStart += 2;
                         i += 1;
                         continue;
