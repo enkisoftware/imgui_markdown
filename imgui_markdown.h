@@ -234,9 +234,9 @@ enum ImGuiMarkdownFormatFlags_
     ImGuiMarkdownFormatFlags_None                        = 0,
     ImGuiMarkdownFormatFlags_DiscardExtraNewLines        = 1 << 0,  // (Accurate parsing) Provided markdown will discard all redundant newlines
     ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading      = 1 << 1,  // (Accurate parsing) Provided markdown will not format a newline after the first line if it is a heading
-    ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance     = 1 << 2,  // (Accurate parsing) Provided markdown will not advance to the next line after formatting a seperator
-    ImGuiMarkdownFormatFlags_GithubStyle                 = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance,
-    ImGuiMarkdownFormatFlags_CommonMarkAll               = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance,
+    ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance     = 1 << 2,  // (Accurate parsing) Provided markdown will not advance to the next line after formatting a separator
+    ImGuiMarkdownFormatFlags_GithubStyle                 = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance,
+    ImGuiMarkdownFormatFlags_CommonMarkAll               = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance,
 };
 
 namespace ImGui
@@ -1140,7 +1140,7 @@ namespace ImGui
                     // In markdown the separator does not advance the cursor
                     ImVec2 cursor = ImGui::GetCursorPos();
                     ImGui::Separator();
-                    if ( (markdownFormatInfo_.config->formatFlags & ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance) ) {
+                    if ( (markdownFormatInfo_.config->formatFlags & ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance) ) {
                         ImGui::SetCursorPos(cursor);
                     }
                 }
