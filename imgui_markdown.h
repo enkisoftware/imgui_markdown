@@ -225,8 +225,19 @@ ___
 ===============================================================================
 */
 
-
 #include <stdint.h>
+
+typedef int ImGuiMarkdownFormatFlags;
+
+enum ImGuiMarkdownFormatFlags_
+{
+    ImGuiMarkdownFormatFlags_None                        = 0,
+    ImGuiMarkdownFormatFlags_DiscardExtraNewLines        = 1 << 0,  // (Accurate parsing) Provided markdown will discard all redundant newlines
+    ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading      = 1 << 1,  // (Accurate parsing) Provided markdown will not format a newline after the first line if it is a heading
+    ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance     = 1 << 2,  // (Accurate parsing) Provided markdown will not advance to the next line after formatting a seperator
+    ImGuiMarkdownFormatFlags_GithubStyle                 = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance,
+    ImGuiMarkdownFormatFlags_CommonMarkAll               = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance,
+};
 
 namespace ImGui
 {
@@ -320,15 +331,16 @@ namespace ImGui
     // - headingFormats controls the format of heading H1 to H3, those above H3 use H3 format
     struct MarkdownConfig
     {
-        static const int        NUMHEADINGS = 3;
+        static const int         NUMHEADINGS = 3;
 
-        MarkdownLinkCallback*   linkCallback = NULL;
+        MarkdownLinkCallback*    linkCallback = NULL;
         MarkdownTooltipCallback* tooltipCallback = NULL;
-        MarkdownImageCallback*  imageCallback = NULL;
-        const char*             linkIcon = "";                      // icon displayd in link tooltip
-        MarkdownHeadingFormat   headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
-        void*                   userData = NULL;
-        MarkdownFormalCallback* formatCallback = defaultMarkdownFormatCallback;
+        MarkdownImageCallback*   imageCallback = NULL;
+        const char*              linkIcon = "";                      // icon displayd in link tooltip
+        MarkdownHeadingFormat    headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
+        void*                    userData = NULL;
+        MarkdownFormalCallback*  formatCallback = defaultMarkdownFormatCallback;
+        ImGuiMarkdownFormatFlags formatFlags = ImGuiMarkdownFormatFlags_None;  // Configure this to change how Markdown gets formatted. By default imgui_markdown uses psuedo-Markdown for backwards compatibility.
     };
 
     //-----------------------------------------------------------------------------
@@ -514,9 +526,12 @@ namespace ImGui
 
         ImGuiStyle& style = ImGui::GetStyle();
         Line        line;
+        Line        prevLine;
         Link        link;
         Emphasis    em;
         TextRegion  textRegion;
+        int concurrentEmptyNewlines = 0;
+        bool appliedExtraNewline = false;
 
         char c = 0;
         for( int i=0; i < (int)markdownLength_; ++i )
@@ -527,6 +542,23 @@ namespace ImGui
             // If we're at the beginning of the line, count any spaces
             if( line.isLeadingSpace )
             {
+                if ( (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_DiscardExtraNewLines) ) // Discard LF and CRLF newlines by markdown spec
+                {
+                    if ( c == '\n' )
+                    {
+                        concurrentEmptyNewlines++;
+                        line.lineStart += 1;
+                        continue;
+                    }
+                    else if ( ( c == '\r' ) && ( (int)markdownLength_ > i + 1 ) && ( markdown_[i + 1] == '\n' ) )
+                    {
+                        concurrentEmptyNewlines++;
+                        line.lineStart += 2;
+                        i += 1;
+                        continue;
+                    }
+                }
+
                 if( c == ' ' )
                 {
                     ++line.leadSpaceCount;
@@ -578,6 +610,16 @@ namespace ImGui
                             continue;
                         }
                     }
+                }
+            }
+
+            if ( (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_DiscardExtraNewLines) )
+            {
+                // In markdown spec, 2 or more consecutive newlines gets converted to a single blank
+                // line. The first newline is always digested by this parser so we check for 1 or more here.
+                if (!appliedExtraNewline && !prevLine.isHeading && concurrentEmptyNewlines >= 1) {
+                    ImGui::NewLine();
+                    appliedExtraNewline = true;
                 }
             }
 
@@ -771,7 +813,7 @@ namespace ImGui
                         line.lineEnd = line.lineStart;
                         line.lineStart = start;
                         line.lastRenderPosition = start - 1;
-                        RenderLine(markdown_, line, textRegion, mdConfig_);
+                        RenderLine( markdown_, line, textRegion, mdConfig_ );
                         line.lineStart          = line.lineEnd;
                         line.lastRenderPosition = line.lineStart - 1;
                     }
@@ -796,6 +838,7 @@ namespace ImGui
                 }
 
                 // reset the line and emphasis state
+                prevLine = line;
 				line = Line();
                 em = Emphasis();
 
@@ -806,6 +849,9 @@ namespace ImGui
 
                 // reset the link
                 link = Link();
+
+                concurrentEmptyNewlines = 0;
+                appliedExtraNewline = false;
             }
         }
 
@@ -1072,33 +1118,37 @@ namespace ImGui
             {
                 fmt = markdownFormatInfo_.config->headingFormats[ markdownFormatInfo_.level - 1 ];
             }
-            if( start_ )
+            if (start_)
             {
-                if( fmt.font  )
+                if ( 0 == ( markdownFormatInfo_.config->formatFlags & ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading ) )
                 {
-                    #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability: https://github.com/ocornut/imgui/issues/8465#issuecomment-2701570771
-                        ImGui::PushFont( fmt.font, fmt.fontSize > 0.0f ? fmt.fontSize : fmt.font->LegacySize );
-                    #else
-                        ImGui::PushFont( fmt.font );
-                    #endif
+                    ImGui::NewLine();
                 }
-                ImGui::NewLine();
+                if (fmt.font)
+                {
+#ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability: https://github.com/ocornut/imgui/issues/8465#issuecomment-2701570771
+                    ImGui::PushFont(fmt.font, fmt.fontSize > 0.0f ? fmt.fontSize : fmt.font->LegacySize);
+#else
+                    ImGui::PushFont(fmt.font);
+#endif
+                }
             }
             else
             {
-                if( fmt.separator )
+                if (fmt.separator)
                 {
+                    // In markdown the separator does not advance the cursor
+                    ImVec2 cursor = ImGui::GetCursorPos();
                     ImGui::Separator();
-                    ImGui::NewLine();
+                    if ( (markdownFormatInfo_.config->formatFlags & ImGuiMarkdownFormatFlags_SeperatorDoesNotAdvance) ) {
+                        ImGui::SetCursorPos(cursor);
+                    }
                 }
-                else
-                {
-                    ImGui::NewLine();
-                }
-                if( fmt.font )
+                if (fmt.font)
                 {
                     ImGui::PopFont();
                 }
+                ImGui::NewLine();
             }
             break;
         }
@@ -1124,5 +1174,4 @@ namespace ImGui
             break;
         }
     }
-
 }
