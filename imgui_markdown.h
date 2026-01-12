@@ -512,9 +512,9 @@ namespace ImGui
         }
     }
 
-    inline Line* DetectTargetLineAsIndent( const Line& self, Line indentLines_[MarkdownConfig::INDENTSTACKSIZE], int indentLinesCount_, bool& is_deeply_nested )
+    inline Line* DetectTargetLineAsIndent( const Line& self, Line indentLines_[MarkdownConfig::INDENTSTACKSIZE], int indentLinesCount_, bool& isDeeplyNested )
     {
-        is_deeply_nested = false;
+        isDeeplyNested = false;
         if (indentLinesCount_ >= MarkdownConfig::INDENTSTACKSIZE)
         {
             return nullptr; // too deep nesting
@@ -530,7 +530,7 @@ namespace ImGui
                     int indentDiff = self.leadSpaceCount - listLine->leadSpaceCount;
                     if (indentDiff > 5) // Too many spaces, not a sub-list
                     {
-                        is_deeply_nested = true;
+                        isDeeplyNested = true;
                         return nullptr;
                     }
 
@@ -635,7 +635,8 @@ namespace ImGui
                     // Deeply nested text always acts as plain-text, regardless of characters found
                     if ( !isDeeplyNested )  // this is always false without ImGuiMarkdownFormatFlags_ExoticIndents
                     {
-                        const bool marksUnorderedListing = ( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_IncludeAllListPrefixes ) ? ( c == '*' || c == '-' || c == '+' ) : ( c == '*' );
+                        bool marksUnorderedListing = ( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_IncludeAllListPrefixes ) ? ( c == '*' || c == '-' || c == '+' ) : ( c == '*' );
+                        marksUnorderedListing &= ( (int)markdownLength_ > i + 1 ) && ( markdown_[ i + 1 ] == ' ' );
                         if ( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ExoticIndents )
                         {
                             if ( !targetIndentLine )
@@ -652,7 +653,7 @@ namespace ImGui
                             line.unorderedListChar = c;
                             ++i;
                             ++line.lastRenderPosition;
-                            if (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ExoticIndents)
+                            if ( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ExoticIndents )
                             {
                                 // This is for unordered lists, rather than plain-text
                                 line.indentCount = targetIndentLine ? targetIndentLine->indentCount + 1 : 0;
@@ -942,6 +943,7 @@ namespace ImGui
 
                 line.lineStart = i + 1;
                 line.lastRenderPosition = i;
+                nextIndentStackCount = -1;
 
                 textRegion.ResetIndent();
 
