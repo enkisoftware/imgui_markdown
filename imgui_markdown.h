@@ -235,6 +235,8 @@ enum ImGuiMarkdownFormatFlags_
     ImGuiMarkdownFormatFlags_DiscardExtraNewLines        = 1 << 0,  // (Accurate parsing) Provided markdown will discard all redundant newlines
     ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading      = 1 << 1,  // (Accurate parsing) Provided markdown will not format a newline after the first line if it is a heading
     ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance     = 1 << 2,  // (Accurate parsing) Provided markdown will not advance to the next line after formatting a separator
+    ImGuiMarkdownFormatFlags_ExoticIndents               = 1 << 3,  // (Accurate parsing) Provided markdown will process indents based on number of leading spaces rather than fixed 2-space indents
+    ImGuiMarkdownFormatFlags_IncludeAllListPrefixes      = 1 << 4, // (Accurate parsing) Provided markdown will include all list prefixes such as '-', '+', '*' for unordered lists and '1.', '2.' etc. for ordered lists, rather than just '*'
     ImGuiMarkdownFormatFlags_GithubStyle                 = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance,
     ImGuiMarkdownFormatFlags_CommonMarkAll               = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance,
 };
@@ -332,6 +334,7 @@ namespace ImGui
     struct MarkdownConfig
     {
         static const int         NUMHEADINGS = 3;
+        static const int         INDENTSTACKSIZE = 8;  // Internal use only
 
         MarkdownLinkCallback*    linkCallback = NULL;
         MarkdownTooltipCallback* tooltipCallback = NULL;
@@ -357,6 +360,7 @@ namespace ImGui
     struct Line;
     inline void UnderLine( ImColor col_ );
     inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ );
+    inline Line* DetectTargetLineAsIndent( const Line& self, Line indentLines_[MarkdownConfig::INDENTSTACKSIZE], int indentLinesCount_, bool& isDeeplyNested_ );
 
     struct TextRegion
     {
@@ -400,11 +404,12 @@ namespace ImGui
     struct Line {
         bool isHeading = false;
         bool isEmphasis = false;
-        bool isUnorderedListStart = false;
+        char unorderedListChar = '\0';
         bool isLeadingSpace = true;     // spaces at start of line
         int  leadSpaceCount = 0;
         int  headingCount = 0;
         int  emphasisCount = 0;
+        int  indentCount = 0;
         int  lineStart = 0;
         int  lineEnd   = 0;
         int  lastRenderPosition = 0;     // lines may get rendered in multiple pieces
@@ -456,12 +461,7 @@ namespace ImGui
     inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ )
     {
         // indent
-        int indentStart = 0;
-        if( line_.isUnorderedListStart )    // ImGui unordered list render always adds one indent
-        {
-            indentStart = 1;
-        }
-        for( int j = indentStart; j < line_.leadSpaceCount / 2; ++j )    // add indents
+        for( int j = 0; j < line_.indentCount; ++j )    // add indents
         {
             ImGui::Indent();
         }
@@ -471,7 +471,7 @@ namespace ImGui
         formatInfo.config = &mdConfig_;
         int textStart = line_.lastRenderPosition + 1;
         int textSize = line_.lineEnd - textStart;
-        if( line_.isUnorderedListStart )    // render unordered list
+        if( line_.unorderedListChar != '\0' )    // render unordered list
         {
             formatInfo.type = MarkdownFormatType::UNORDERED_LIST;
             mdConfig_.formatCallback( formatInfo, true );
@@ -506,9 +506,45 @@ namespace ImGui
         mdConfig_.formatCallback( formatInfo, false );
 
         // unindent
-        for( int j = indentStart; j < line_.leadSpaceCount / 2; ++j )
+        for( int j = 0; j < line_.indentCount; ++j )
         {
             ImGui::Unindent();
+        }
+    }
+
+    inline Line* DetectTargetLineAsIndent( const Line& self, Line indentLines_[MarkdownConfig::INDENTSTACKSIZE], int indentLinesCount_, bool& is_deeply_nested )
+    {
+        is_deeply_nested = false;
+        if (indentLinesCount_ >= MarkdownConfig::INDENTSTACKSIZE)
+        {
+            return nullptr; // too deep nesting
+        }
+        else
+        {
+            if (indentLinesCount_ > 0) // Sub-lists have special handling from root lists
+            {
+                // We traverse the list bottom-up to see if we are in a sub-list
+                for (int j = indentLinesCount_ - 1; j >= 0; --j)
+                {
+                    Line* listLine = indentLines_ + j;
+                    int indentDiff = self.leadSpaceCount - listLine->leadSpaceCount;
+                    if (indentDiff > 5) // Too many spaces, not a sub-list
+                    {
+                        is_deeply_nested = true;
+                        return nullptr;
+                    }
+
+                    if (indentDiff >= 2) // Sub-lists have at least 2 spaces more indent
+                    {
+                        return listLine;
+                    }
+                }
+                return nullptr;
+            }
+            else
+            {
+                return nullptr; // Root list
+            }
         }
     }
 
@@ -533,6 +569,10 @@ namespace ImGui
         int concurrentEmptyNewlines = 0;
         bool appliedExtraNewline = false;
 
+        Line lineIndentStack[MarkdownConfig::INDENTSTACKSIZE];
+        int lineIndentStackCount = 0;
+        int nextIndentStackCount = -1;
+
         char c = 0;
         for( int i=0; i < (int)markdownLength_; ++i )
         {
@@ -542,6 +582,18 @@ namespace ImGui
             // If we're at the beginning of the line, count any spaces
             if( line.isLeadingSpace )
             {
+                if ( (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ExoticIndents) )
+                {
+                    if ( c == '\n' )
+                    {
+                        lineIndentStackCount = 0;  // reset indents on multiple newlines
+                    }
+                    else if ( ( c == '\r' ) && ( (int)markdownLength_ > i + 1 ) && ( markdown_[i + 1] == '\n' ) )
+                    {
+                        lineIndentStackCount = 0;  // reset indents on multiple newlines
+                    }
+                }
+
                 if ( (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_DiscardExtraNewLines) ) // Discard LF and CRLF newlines by markdown spec
                 {
                     if ( c == '\n' )
@@ -568,46 +620,82 @@ namespace ImGui
                 {
                     line.isLeadingSpace = false;
                     line.lastRenderPosition = i - 1;
-                    if(( c == '*' ) && ( line.leadSpaceCount >= 2 ))
+                    bool isDeeplyNested = false;
+                    Line* targetIndentLine = nullptr;
+                    if ( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ExoticIndents )
                     {
-                        if( ( (int)markdownLength_ > i + 1 ) && ( markdown_[ i + 1 ] == ' ' ) )    // space after '*'
-                        {
-                            line.isUnorderedListStart = true;
-                            ++i;
-                            ++line.lastRenderPosition;
-                        }
-                        // carry on processing as could be emphasis
+                        targetIndentLine = DetectTargetLineAsIndent(line, lineIndentStack, lineIndentStackCount, isDeeplyNested);
+                        // This is assuming plain-text, which is tabbed to the deepest indentation on the stack
+                        line.indentCount = lineIndentStackCount > 0 ? lineIndentStack[lineIndentStackCount - 1].indentCount + 1 : 0;
                     }
-                    else if( c == '#' )
+                    else
                     {
-                        line.headingCount++;
-                        bool bContinueChecking = true;
-                        int j = i;
-                        while( ++j < (int)markdownLength_ && bContinueChecking )
+                        line.indentCount = line.leadSpaceCount / 2;
+                    }
+                    // Deeply nested text always acts as plain-text, regardless of characters found
+                    if ( !isDeeplyNested )  // this is always false without ImGuiMarkdownFormatFlags_ExoticIndents
+                    {
+                        const bool marksUnorderedListing = ( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_IncludeAllListPrefixes ) ? ( c == '*' || c == '-' || c == '+' ) : ( c == '*' );
+                        if ( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ExoticIndents )
                         {
-                            c = markdown_[j];
-                            switch( c )
+                            if ( !targetIndentLine )
                             {
-                            case '#':
-                                line.headingCount++;
-                                break;
-                            case ' ':
-                                line.lastRenderPosition = j - 1;
-                                i = j;
-                                line.isHeading = true;
-                                bContinueChecking = false;
-                                break;
-                            default:
-                                line.isHeading = false;
-                                bContinueChecking = false;
-                                break;
+                                marksUnorderedListing &= line.leadSpaceCount < 4;  // root lists require less than 4 leading spaces
                             }
                         }
-                        if( line.isHeading )
+                        else
                         {
-                            // reset emphasis status, we do not support emphasis around headers for now
-                            em = Emphasis();
-                            continue;
+                            marksUnorderedListing &= line.leadSpaceCount >= 2;  // default imgui_markdown behavior
+                        }
+                        if ( marksUnorderedListing )
+                        {
+                            line.unorderedListChar = c;
+                            ++i;
+                            ++line.lastRenderPosition;
+                            if (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ExoticIndents)
+                            {
+                                // This is for unordered lists, rather than plain-text
+                                line.indentCount = targetIndentLine ? targetIndentLine->indentCount + 1 : 0;
+                                nextIndentStackCount = line.indentCount + 1;
+                            }
+                        }
+                        else if( c == '#' )
+                        {
+                            line.headingCount++;
+                            bool bContinueChecking = true;
+                            int j = i;
+                            while( ++j < (int)markdownLength_ && bContinueChecking )
+                            {
+                                c = markdown_[j];
+                                switch( c )
+                                {
+                                case '#':
+                                    line.headingCount++;
+                                    break;
+                                case ' ':
+                                    line.lastRenderPosition = j - 1;
+                                    i = j;
+                                    line.isHeading = true;
+                                    if ( ( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ExoticIndents ) )
+                                    {
+                                        // Headings act as lists do, except child lines are not allowed, so they retreat
+                                        line.indentCount = targetIndentLine ? targetIndentLine->indentCount + 1 : 0;
+                                        nextIndentStackCount = line.indentCount;
+                                    }
+                                    bContinueChecking = false;
+                                    break;
+                                default:
+                                    line.isHeading = false;
+                                    bContinueChecking = false;
+                                    break;
+                                }
+                            }
+                            if( line.isHeading )
+                            {
+                                // reset emphasis status, we do not support emphasis around headers for now
+                                em = Emphasis();
+                                continue;
+                            }
                         }
                     }
                 }
@@ -670,7 +758,7 @@ namespace ImGui
                     RenderLine( markdown_, line, textRegion, mdConfig_ );
                     line.leadSpaceCount = 0;
                     link.url.stop = i;
-                    line.isUnorderedListStart = false;    // the following text shouldn't have bullets
+                    line.unorderedListChar = '\0';    // the following text shouldn't have bullets
                     ImGui::SameLine( 0.0f, 0.0f );
                     if( link.isImage )   // it's an image, render it.
                     {
@@ -788,7 +876,7 @@ namespace ImGui
                             line.lineEnd = lineEnd;
                             RenderLine( markdown_, line, textRegion, mdConfig_ );
 						    ImGui::SameLine( 0.0f, 0.0f );
-                            line.isUnorderedListStart = false;
+                            line.unorderedListChar = '\0';
                             line.leadSpaceCount = 0;
                         }
 						line.isEmphasis = true;
@@ -835,6 +923,16 @@ namespace ImGui
                 {
                     // render the line: multiline emphasis requires a complex implementation so not supporting
                     RenderLine( markdown_, line, textRegion, mdConfig_ );
+                }
+
+                if( 0 < nextIndentStackCount && nextIndentStackCount < MarkdownConfig::INDENTSTACKSIZE )
+                {
+                    lineIndentStack[nextIndentStackCount - 1] = line;
+                    lineIndentStackCount = nextIndentStackCount;
+                }
+                else if ( nextIndentStackCount == 0 )
+                {
+                    lineIndentStackCount = 0;
                 }
 
                 // reset the line and emphasis state
