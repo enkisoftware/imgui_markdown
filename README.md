@@ -259,10 +259,9 @@ Cross-platform rendering library.
 [bkaradzic.github.io/bgfx/overview](https://bkaradzic.github.io/bgfx/overview.html)
 
 ### [Imogen](https://github.com/CedricGuillemet/Imogen)
-GPU/CPU Texture Generator  
-[skaven.fr/imogen](http://skaven.fr/imogen/)
+GPU/CPU Texture Generator
 
-![Imogen screenshot](https://camo.githubusercontent.com/28347bc0c1627aa4f289e1b2b769afcb3a5de370/68747470733a2f2f692e696d6775722e636f6d2f7351664f3542722e706e67)
+![Imogen screenshot](https://camo.githubusercontent.com/dca2488007e88dbed7d4cabcbce7e4f7712bf93a7bdd62db2be1f0e2559bfdc6/68747470733a2f2f692e696d6775722e636f6d2f7351664f3542722e706e67)
 
 ### [Light Tracer](https://lighttracer.org/)
 Experimental GPU ray tracer for web
