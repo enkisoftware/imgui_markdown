@@ -23,7 +23,7 @@ imgui_markdown currently supports the following markdown functionality:
   * Image
   * Horizontal rule
 
-![imgui_markdown demo live editing](https://github.com/juliettef/Media/blob/main/imgui_markdown_demo_live_editing.gif?raw=true)
+![imgui_markdown demo live editing](https://github.com/enkisoftware/Media/blob/main/imgui_markdown_demo_live_editing.gif?raw=true)
 
 *Note - the gif above is heavily compressed due to GitHub limitations*
 
@@ -79,7 +79,7 @@ Normal text
 ___
 ```
 
-![Example use of imgui_markdown with icon fonts](https://github.com/juliettef/Media/blob/main/imgui_markdown_icon_font.jpg?raw=true)
+![Example use of imgui_markdown with icon fonts](https://github.com/enkisoftware/Media/blob/main/imgui_markdown_icon_font.jpg?raw=true)
 
 ### Unsupported Syntax Combinations
 Non exhaustive
@@ -252,7 +252,7 @@ Avoyd is an abstract 6 degrees of freedom voxel game.
 
 The game and the voxel editor's help and tutorials use imgui_markdown with Dear ImGui.  
 
-![Avoyd screenshot](https://github.com/juliettef/Media/blob/main/imgui_markdown_Avoyd_about_OSS.png?raw=true)
+![Avoyd screenshot](https://github.com/enkisoftware/Media/blob/main/imgui_markdown_Avoyd_about_OSS.png?raw=true)
 
 ### [bgfx](https://github.com/bkaradzic/bgfx)
 Cross-platform rendering library.  
@@ -266,7 +266,13 @@ GPU/CPU Texture Generator
 ### [Light Tracer](https://lighttracer.org/)
 Experimental GPU ray tracer for web
 
-![Light Tracer screenshot](https://github.com/juliettef/Media/blob/main/imgui_markdown_Light_Tracer.png?raw=true)
+![Light Tracer screenshot](https://github.com/enkisoftware/Media/blob/main/imgui_markdown_Light_Tracer.png?raw=true)
+
+### [Lobster Programming Language](https://github.com/aardappel/lobster)
+Lobster is a statically typed programming language with a Python-esque syntax that combines the advantages of an expressive type system and compile-time memory management with a very lightweight, friendly and terse syntax, by doing most of the heavy lifting for you.
+[Dear ImGui sample with imgui_markdown](https://github.com/aardappel/lobster/blob/master/samples/imguitest.lobster)
+
+![Using imgui_markdown in Lobster - screenshot](https://github.com/enkisoftware/Media/blob/main/imgui_markdown_Lobster.webp?raw=true)
 
 ### [Visual 6502 Remix](https://github.com/floooh/v6502r)
 Transistor level 6502 Hardware Simulation  
@@ -277,16 +283,12 @@ Using imgui_markdown as help viewer for Visual 6502 Remix with internal and exte
 [![Using imgui_markdown as help viewer for Visual 6502 Remix with internal and external links - animated gif](https://user-images.githubusercontent.com/1699414/69185510-320baa00-0b17-11ea-9fd5-82ed6e02a05c.gif)
 ![Using imgui_markdown as help viewer for Visual 6502 Remix - screenshot](https://user-images.githubusercontent.com/1699414/69185626-67b09300-0b17-11ea-85a8-fed54a0082b4.png)](https://github.com/ocornut/imgui/issues/2847#issuecomment-555710973)  
 
-![Using imgui_markdown in the About page for Visual 6502 Remix - screenshot](https://github.com/juliettef/Media/blob/main/imgui_markdown_Visual_6502_Remix_About.png?raw=true)
-
-### [Lobster programming language](https://github.com/aardappel/lobster)
-Lobster is a statically typed programming language with a Python-esque syntax that combines the advantages of an expressive type system and compile-time memory management with a very lightweight, friendly and terse syntax, by doing most of the heavy lifting for you.
-[Dear ImGui sample with imgui_markdown](https://github.com/aardappel/lobster/blob/master/samples/imguitest.lobster)
+![Using imgui_markdown in the About page for Visual 6502 Remix - screenshot](https://github.com/enkisoftware/Media/blob/main/imgui_markdown_Visual_6502_Remix_About.png?raw=true)
 
 ## Credits
 
 Design and implementation - [Doug Binks](http://www.enkisoftware.com/about.html#doug) - [@dougbinks](https://github.com/dougbinks)  
-Implementation and maintenance - [Juliette Foucaut](http://www.enkisoftware.com/about.html#juliette) - [@juliettef](https://github.com/juliettef)  
+Implementation - [Juliette Foucaut](http://www.enkisoftware.com/about.html#juliette) - [@juliettef](https://github.com/juliettef)  
 [Image resize](https://github.com/juliettef/imgui_markdown/pull/15) example code - [Soufiane Khiat](https://github.com/soufianekhiat)  
 Emphasis and horizontal rule initial implementation - [Dmitry Mekhontsev](https://github.com/mekhontsev)  
 Thanks to [Omar Cornut for Dear ImGui](https://github.com/ocornut/imgui)  
