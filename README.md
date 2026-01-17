@@ -247,35 +247,35 @@ ___
 ## Projects Using imgui_markdown
 
 ### [Avoyd](https://www.enkisoftware.com/avoyd)
-Avoyd is an abstract 6 degrees of freedom voxel game.  
+Avoyd is a voxel Editor and Renderer, as well as a voxel game.  
+The in-app documentation, tutorials, and about windows use imgui_markdown with Dear ImGui.  
 [www.avoyd.com](https://www.avoyd.com)  
 
-The game and the voxel editor's help and tutorials use imgui_markdown with Dear ImGui.  
-
-![Avoyd screenshot](https://github.com/enkisoftware/Media/blob/main/imgui_markdown_Avoyd_about_OSS.png?raw=true)
+![Side-by-side markdown code and the corresponding text in the Avoyd application](https://github.com/enkisoftware/Media/blob/main/imgui_markdown_Avoyd.webp?raw=true)
 
 ### [bgfx](https://github.com/bkaradzic/bgfx)
 Cross-platform rendering library.  
 [bkaradzic.github.io/bgfx/overview](https://bkaradzic.github.io/bgfx/overview.html)
 
 ### [Imogen](https://github.com/CedricGuillemet/Imogen)
-GPU/CPU Texture Generator
+GPU/CPU Texture Generator  
 
 ![Imogen screenshot](https://camo.githubusercontent.com/dca2488007e88dbed7d4cabcbce7e4f7712bf93a7bdd62db2be1f0e2559bfdc6/68747470733a2f2f692e696d6775722e636f6d2f7351664f3542722e706e67)
 
 ### [Light Tracer](https://lighttracer.org/)
-Experimental GPU ray tracer for web
+Experimental GPU ray tracer for web  
 
 ![Light Tracer screenshot](https://github.com/enkisoftware/Media/blob/main/imgui_markdown_Light_Tracer.png?raw=true)
 
 ### [Lobster Programming Language](https://github.com/aardappel/lobster)
-Lobster is a statically typed programming language with a Python-esque syntax that combines the advantages of an expressive type system and compile-time memory management with a very lightweight, friendly and terse syntax, by doing most of the heavy lifting for you.
-[Dear ImGui sample with imgui_markdown](https://github.com/aardappel/lobster/blob/master/samples/imguitest.lobster)
+Lobster is a statically typed programming language with a Python-esque syntax that combines the advantages of an expressive type system and compile-time memory management with a very lightweight, friendly and terse syntax, by doing most of the heavy lifting for you.  
+[Dear ImGui sample with imgui_markdown](https://github.com/aardappel/lobster/blob/master/samples/imguitest.lobster)  
 
 ![Using imgui_markdown in Lobster - screenshot](https://github.com/enkisoftware/Media/blob/main/imgui_markdown_Lobster.webp?raw=true)
 
 ### [Visual 6502 Remix](https://github.com/floooh/v6502r)
 Transistor level 6502 Hardware Simulation  
+
 [hfloooh.github.io/visual6502remix](https://floooh.github.io/visual6502remix/)  
 
 Using imgui_markdown as help viewer for Visual 6502 Remix with internal and external links: 
