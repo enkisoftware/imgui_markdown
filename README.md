@@ -279,6 +279,10 @@ Using imgui_markdown as help viewer for Visual 6502 Remix with internal and exte
 
 ![Using imgui_markdown in the About page for Visual 6502 Remix - screenshot](https://github.com/juliettef/Media/blob/main/imgui_markdown_Visual_6502_Remix_About.png?raw=true)
 
+### [Lobster programming language](https://github.com/aardappel/lobster)
+Lobster is a statically typed programming language with a Python-esque syntax that combines the advantages of an expressive type system and compile-time memory management with a very lightweight, friendly and terse syntax, by doing most of the heavy lifting for you.
+[Dear ImGui sample with imgui_markdown](https://github.com/aardappel/lobster/blob/master/samples/imguitest.lobster)
+
 ## Credits
 
 Design and implementation - [Doug Binks](http://www.enkisoftware.com/about.html#doug) - [@dougbinks](https://github.com/dougbinks)  
