@@ -699,7 +699,7 @@ namespace ImGui
                         }
                         if( !drawnImage )
                         {
-                            ImGui::Text( "( Image %.*s not loaded )", link.url.size(), markdown_ + link.url.start );
+                            textRegion.RenderLinkTextWrapped( markdown_ + link.text.start, markdown_ + link.text.start + link.text.size(), link, markdown_, mdConfig_, &linkHoverStart, false );
                         }
                         if( ImGui::IsItemHovered() )
                         {
