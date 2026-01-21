@@ -296,8 +296,8 @@ namespace ImGui
         int32_t                 textLength = 0;
     };
 
-    typedef void                MarkdownLinkCallback( MarkdownLinkCallbackData data );
-    typedef void                MarkdownTooltipCallback( MarkdownTooltipCallbackData data );
+    typedef void                (MarkdownLinkCallback)( MarkdownLinkCallbackData data );
+    typedef void                (MarkdownTooltipCallback)( MarkdownTooltipCallbackData data );
 
     inline void defaultMarkdownTooltipCallback( MarkdownTooltipCallbackData data_ )
     {
