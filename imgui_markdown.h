@@ -87,7 +87,7 @@ ___
 
 // Example use on Windows with links opening in a browser
 
-#include "ImGui.h"                // https://github.com/ocornut/imgui
+#include "imgui.h"                // https://github.com/ocornut/imgui
 #include "imgui_markdown.h"       // https://github.com/juliettef/imgui_markdown
 #include "IconsFontAwesome5.h"    // https://github.com/juliettef/IconFontCppHeaders
 

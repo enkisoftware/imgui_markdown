@@ -22,6 +22,7 @@ imgui_markdown currently supports the following markdown functionality:
   * Link
   * Image
   * Horizontal rule
+  * Tables
 
 ![imgui_markdown demo live editing](https://github.com/enkisoftware/Media/blob/main/imgui_markdown_demo_live_editing.gif?raw=true)
 
