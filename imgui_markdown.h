@@ -524,12 +524,11 @@ namespace ImGui
             linkHoverStart = s_linkHoverStart;
         }
 
-        ImGuiStyle& style = ImGui::GetStyle();
-        Line        line;
-        Line        prevLine;
-        Link        link;
-        Emphasis    em;
-        TextRegion  textRegion;
+        Line       line;
+        Line       prevLine;
+        Link       link;
+        Emphasis   em;
+        TextRegion textRegion;
         int concurrentEmptyNewlines = 0;
         bool appliedExtraNewline = false;
 
