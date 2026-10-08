@@ -226,6 +226,8 @@ ___
 */
 
 #include <stdint.h>
+#include "imgui.h"
+#include "imgui_internal.h"
 
 typedef int ImGuiMarkdownFormatFlags;
 
@@ -323,6 +325,13 @@ namespace ImGui
         #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability: https://github.com/ocornut/imgui/issues/8465#issuecomment-2701570771
         float                   fontSize = 0.0f;                    // Font size if using dynamic fonts
         #endif
+
+        MarkdownHeadingFormat( ImFont* font_ = NULL, bool separator_ = true, float fontSize_ = 0.0f )
+            : font( font_ ), separator( separator_ )
+        #ifdef IMGUI_HAS_TEXTURES
+            , fontSize( fontSize_ )
+        #endif
+        {}
     };
 
     // Configuration struct for Markdown
@@ -918,7 +927,48 @@ namespace ImGui
     // IsCharInsideWord based on ImGui's CalcWordWrapPositionA
     inline bool IsCharInsideWord( char c_ )
     {
-        return c_ != ' ' && c_ != '.' && c_ != ',' && c_ != ';' && c_ != '!' && c_ != '?' && c_ != '\"';
+        return c_ != ' ' && c_ != '\t' && c_ != '\n' && c_ != '\r' &&
+               c_ != '.' && c_ != ',' && c_ != ';' && c_ != '!' && c_ != '?' &&
+               c_ != '\"' && c_ != '(' && c_ != ')' && c_ != '[' && c_ != ']' &&
+               c_ != '{' && c_ != '}';
+    }
+
+    // Typographic wrap helper: Prevents orphaned opening quotes/brackets and severed contractions/hyphens
+    inline const char* AdjustWrapForTypography( const char* text_, const char* endLine, const char* text_end_ )
+    {
+        if( endLine <= text_ || endLine >= text_end_ )
+        {
+            return endLine;
+        }
+
+        char c_ = *endLine;
+        char prev_c = *(endLine - 1);
+
+        // 1. Orphaned Opening Delimiter: e.g. " word -> break before the opening delimiter so it travels with the word!
+        if( ( prev_c == '\"' || prev_c == '\'' || prev_c == '(' || prev_c == '[' || prev_c == '{' ) &&
+            ( endLine - 1 > text_ && *(endLine - 2) == ' ' ) )
+        {
+            return endLine - 1;
+        }
+
+        // 2. Severed Contraction or Hyphen: e.g. "man's" or "semi-final" -> break before the whole compound word!
+        if( ( prev_c == '\'' || prev_c == '-' ) &&
+            ( endLine - 1 > text_ && IsCharInsideWord( *(endLine - 2) ) ) &&
+            ( IsCharInsideWord( c_ ) ) )
+        {
+            const char* rewind = endLine - 2;
+            while( rewind > text_ && *rewind != ' ' )
+            {
+                --rewind;
+            }
+
+            if( rewind > text_ && *rewind == ' ' )
+            {
+                return rewind;
+            }
+        }
+
+        return endLine;
     }
 
     // ImGui::TextWrapped will wrap at the starting position
@@ -940,22 +990,32 @@ namespace ImGui
             endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
         #endif
         }
+        endLine = AdjustWrapForTypography( text_, endLine, text_end_ );
 
         if( endLine > text_ && endLine < text_end_ )
         {
             if( IsCharInsideWord( *endLine ) )
             {
-                // see if we can do a better cut.
-                float       widthNextLine = widthLeft + GetCursorScreenPos().x - GetWindowPos().x; // was GetContentRegionMax().x on IMGUI_VERSION_NUM < 19099
+                // Lookahead: check if chunk can fit completely on the next line
+                float lineStartX = ImGui::GetCurrentWindow()->Pos.x + ImGui::GetCurrentWindow()->DC.Indent.x;
+                float widthNextLine = widthLeft + ImMax( 0.0f, ImGui::GetCursorScreenPos().x - lineStartX );
             #if IMGUI_VERSION_NUM >= 19197
                 const char* endNextLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthNextLine );
             #else
                 const char* endNextLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthNextLine );
             #endif
-                if( endNextLine == text_end_ || ( endNextLine <= text_end_ && !IsCharInsideWord( *endNextLine ) ) )
+                if( endNextLine == text_end_ )
                 {
-                        // can possibly do better if go to next line
+                    // Fits completely on the next line: advance to next line to avoid mid-word break
                     endLine = text_;
+                    ImGui::NewLine();
+                    widthLeft = ImGui::GetContentRegionAvail().x;
+                #if IMGUI_VERSION_NUM >= 19197
+                    endLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthLeft );
+                #else
+                    endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+                #endif
+                    endLine = AdjustWrapForTypography( text_, endLine, text_end_ );
                 }
             }
         }
@@ -979,6 +1039,7 @@ namespace ImGui
         #else
             endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
         #endif
+            endLine = AdjustWrapForTypography( text_, endLine, text_end_ );
             if( text_ == endLine )
             {
                 endLine++;
@@ -989,73 +1050,84 @@ namespace ImGui
 
     inline void TextRegion::RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_,
         const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_, bool bIndentToHere_ )
+    {
+    #if IMGUI_VERSION_NUM >= 19197
+        float       fontSize  = ImGui::GetFontSize();
+    #else
+        float       scale = ImGui::GetIO().FontGlobalScale;
+    #endif
+        float       widthLeft = GetContentRegionAvail().x;
+        const char* endLine = text_;
+        if( widthLeft > 0.0f )
         {
-            #if IMGUI_VERSION_NUM >= 19197
-                float       fontSize  = ImGui::GetFontSize();
-            #else
-                float       scale = ImGui::GetIO().FontGlobalScale;
-            #endif
-            float       widthLeft = GetContentRegionAvail().x;
-            const char* endLine = text_;
-            if( widthLeft > 0.0f )
-            {
-                #if IMGUI_VERSION_NUM >= 19197
-                    endLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthLeft );
-                #else
-                    endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
-                #endif
-            }
+        #if IMGUI_VERSION_NUM >= 19197
+            endLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthLeft );
+        #else
+            endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+        #endif
+        }
+        endLine = AdjustWrapForTypography( text_, endLine, text_end_ );
 
-            if( endLine > text_ && endLine < text_end_ )
+        if( endLine > text_ && endLine < text_end_ )
+        {
+            if( IsCharInsideWord( *endLine ) )
             {
-                if( IsCharInsideWord( *endLine ) )
+                // Lookahead: check if link text can fit completely on the next line
+                float lineStartX = ImGui::GetCurrentWindow()->Pos.x + ImGui::GetCurrentWindow()->DC.Indent.x;
+                float widthNextLine = widthLeft + ImMax( 0.0f, ImGui::GetCursorScreenPos().x - lineStartX );
+            #if IMGUI_VERSION_NUM >= 19197
+                const char* endNextLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthNextLine );
+            #else
+                const char* endNextLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthNextLine );
+            #endif
+                if( endNextLine == text_end_ )
                 {
-                    // see if we can do a better cut.
-                    float       widthNextLine = widthLeft + GetCursorScreenPos().x - GetWindowPos().x; // was GetContentRegionMax().x on IMGUI_VERSION_NUM < 19099
-                    #if IMGUI_VERSION_NUM >= 19197
-                        const char* endNextLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthNextLine );
-                    #else
-                        const char* endNextLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthNextLine );
-                    #endif
-                    if( endNextLine == text_end_ || ( endNextLine <= text_end_ && !IsCharInsideWord( *endNextLine ) ) )
-                    {
-                        // can possibly do better if go to next line
-                        endLine = text_;
-                    }
-                }
-            }
-            bool bHovered = RenderLinkText( text_, endLine, link_, markdown_, mdConfig_, linkHoverStart_ );
-            if( bIndentToHere_ )
-            {
-                float indentNeeded = GetContentRegionAvail().x - widthLeft;
-                if( indentNeeded )
-                {
-                    ImGui::Indent( indentNeeded );
-                    indentX += indentNeeded;
-                }
-            }
-            widthLeft = GetContentRegionAvail().x;
-            while( endLine < text_end_ )
-            {
-                text_ = endLine;
-                if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
+                    // Fits completely on the next line: advance to next line to avoid mid-word break
+                    endLine = text_;
+                    ImGui::NewLine();
+                    widthLeft = ImGui::GetContentRegionAvail().x;
                 #if IMGUI_VERSION_NUM >= 19197
                     endLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthLeft );
                 #else
                     endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
                 #endif
-                if( text_ == endLine )
-                {
-                    endLine++;
+                    endLine = AdjustWrapForTypography( text_, endLine, text_end_ );
                 }
-                bool bThisLineHovered = RenderLinkText( text_, endLine, link_, markdown_, mdConfig_, linkHoverStart_ );
-                bHovered = bHovered || bThisLineHovered;
-            }
-            if( !bHovered && *linkHoverStart_ == markdown_ + link_.text.start )
-            {
-                *linkHoverStart_ = NULL;
             }
         }
+        bool bHovered = RenderLinkText( text_, endLine, link_, markdown_, mdConfig_, linkHoverStart_ );
+        if( bIndentToHere_ )
+        {
+            float indentNeeded = GetContentRegionAvail().x - widthLeft;
+            if( indentNeeded )
+            {
+                ImGui::Indent( indentNeeded );
+                indentX += indentNeeded;
+            }
+        }
+        widthLeft = GetContentRegionAvail().x;
+        while( endLine < text_end_ )
+        {
+            text_ = endLine;
+            if( *text_ == ' ' ) { ++text_; }    // skip a space at start of line
+        #if IMGUI_VERSION_NUM >= 19197
+            endLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text_, text_end_, widthLeft );
+        #else
+            endLine = ImGui::GetFont()->CalcWordWrapPositionA( scale, text_, text_end_, widthLeft );
+        #endif
+            endLine = AdjustWrapForTypography( text_, endLine, text_end_ );
+            if( text_ == endLine )
+            {
+                endLine++;
+            }
+            bool bThisLineHovered = RenderLinkText( text_, endLine, link_, markdown_, mdConfig_, linkHoverStart_ );
+            bHovered = bHovered || bThisLineHovered;
+        }
+        if( !bHovered && *linkHoverStart_ == markdown_ + link_.text.start )
+        {
+            *linkHoverStart_ = NULL;
+        }
+    }
 
 
     inline void defaultMarkdownFormatCallback( const MarkdownFormatInfo& markdownFormatInfo_, bool start_ )
