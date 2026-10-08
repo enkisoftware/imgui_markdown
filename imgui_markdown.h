@@ -226,6 +226,8 @@ ___
 */
 
 #include <stdint.h>
+#include "imgui.h"
+#include "imgui_internal.h"
 
 typedef int ImGuiMarkdownFormatFlags;
 
@@ -235,8 +237,9 @@ enum ImGuiMarkdownFormatFlags_
     ImGuiMarkdownFormatFlags_DiscardExtraNewLines        = 1 << 0,  // (Accurate parsing) Provided markdown will discard all redundant newlines
     ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading      = 1 << 1,  // (Accurate parsing) Provided markdown will not format a newline after the first line if it is a heading
     ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance     = 1 << 2,  // (Accurate parsing) Provided markdown will not advance to the next line after formatting a separator
-    ImGuiMarkdownFormatFlags_GithubStyle                 = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance,
-    ImGuiMarkdownFormatFlags_CommonMarkAll               = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance,
+    ImGuiMarkdownFormatFlags_ListHangingIndents          = 1 << 3,  // (Accurate parsing) Wrapped list items maintain hanging indent aligned with text
+    ImGuiMarkdownFormatFlags_GithubStyle                 = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance | ImGuiMarkdownFormatFlags_ListHangingIndents,
+    ImGuiMarkdownFormatFlags_CommonMarkAll               = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance | ImGuiMarkdownFormatFlags_ListHangingIndents,
 };
 
 namespace ImGui
@@ -323,6 +326,13 @@ namespace ImGui
         #ifdef IMGUI_HAS_TEXTURES // used to detect dynamic font capability: https://github.com/ocornut/imgui/issues/8465#issuecomment-2701570771
         float                   fontSize = 0.0f;                    // Font size if using dynamic fonts
         #endif
+
+        MarkdownHeadingFormat( ImFont* font_ = NULL, bool separator_ = true, float fontSize_ = 0.0f )
+            : font( font_ ), separator( separator_ )
+        #ifdef IMGUI_HAS_TEXTURES
+            , fontSize( fontSize_ )
+        #endif
+        {}
     };
 
     // Configuration struct for Markdown
@@ -341,6 +351,7 @@ namespace ImGui
         void*                    userData = NULL;
         MarkdownFormalCallback*  formatCallback = defaultMarkdownFormatCallback;
         ImGuiMarkdownFormatFlags formatFlags = ImGuiMarkdownFormatFlags_None;  // Configure this to change how Markdown gets formatted. By default imgui_markdown uses psuedo-Markdown for backwards compatibility.
+        float                    bulletSpacing = 0.0f;               // 0.0f = default spacing; > 0.0f = custom gap between bullet and text
     };
 
     //-----------------------------------------------------------------------------
@@ -360,7 +371,7 @@ namespace ImGui
 
     struct TextRegion
     {
-        TextRegion() : indentX( 0.0f )
+        TextRegion() : indentX( 0.0f ), leadIndents( 0 )
         {
         }
         ~TextRegion()
@@ -370,11 +381,25 @@ namespace ImGui
 
         void RenderTextWrapped( const char* text_, const char* text_end_, bool bIndentToHere_ = false );
 
-        void RenderListTextWrapped( const char* text_, const char* text_end_ )
+        static float GetBulletSpacing( float custom_spacing = -1.0f )
+        {
+            if( custom_spacing >= 0.0f )
+                return custom_spacing;
+            return -1.0f;
+        }
+
+        void RenderListTextWrapped( const char* text_, const char* text_end_, float bullet_spacing = -1.0f, bool bHangingIndent = true )
         {
             ImGui::Bullet();
-            ImGui::SameLine();
-            RenderTextWrapped( text_, text_end_, true );
+            if( bullet_spacing >= 0.0f )
+            {
+                ImGui::SameLine( 0.0f, bullet_spacing );
+            }
+            else
+            {
+                ImGui::SameLine();
+            }
+            RenderTextWrapped( text_, text_end_, bHangingIndent );
         }
 
         bool RenderLinkText( const char* text_, const char* text_end_, const Link& link_,
@@ -383,6 +408,25 @@ namespace ImGui
         void RenderLinkTextWrapped( const char* text_, const char* text_end_, const Link& link_,
             const char* markdown_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_, bool bIndentToHere_ = false );
 
+        float GetIndent() const
+        {
+            return indentX;
+        }
+
+        int GetLeadIndents() const
+        {
+            return leadIndents;
+        }
+
+        void ApplyLeadIndent( int count )
+        {
+            while( leadIndents < count )
+            {
+                ImGui::Indent();
+                ++leadIndents;
+            }
+        }
+
         void ResetIndent()
         {
             if( indentX > 0.0f )
@@ -390,10 +434,16 @@ namespace ImGui
                 ImGui::Unindent( indentX );
             }
             indentX = 0.0f;
+            while( leadIndents > 0 )
+            {
+                ImGui::Unindent();
+                --leadIndents;
+            }
         }
 
     private:
         float       indentX;
+        int         leadIndents;
     };
 
     // Text that starts after a new line (or at beginning) and ends with a newline (or at end)
@@ -455,15 +505,26 @@ namespace ImGui
 
     inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ )
     {
+        bool bHangingIndent = ( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ListHangingIndents ) != 0;
+
         // indent
         int indentStart = 0;
-        if( line_.isUnorderedListStart )    // ImGui unordered list render always adds one indent
+        if( !bHangingIndent )
         {
-            indentStart = 1;
+            if( line_.isUnorderedListStart )    // ImGui unordered list render always adds one indent
+            {
+                indentStart = 1;
+            }
+            for( int j = indentStart; j < line_.leadSpaceCount / 2; ++j )    // add indents
+            {
+                ImGui::Indent();
+            }
         }
-        for( int j = indentStart; j < line_.leadSpaceCount / 2; ++j )    // add indents
+        else
         {
-            ImGui::Indent();
+            // Apply line-level leading space indentation (nested list depth)
+            int numLeadIndents = line_.leadSpaceCount / 2;
+            textRegion_.ApplyLeadIndent( numLeadIndents );
         }
 
         // render
@@ -476,7 +537,9 @@ namespace ImGui
             formatInfo.type = MarkdownFormatType::UNORDERED_LIST;
             mdConfig_.formatCallback( formatInfo, true );
             const char* text = markdown_ + textStart + 1;
-            textRegion_.RenderListTextWrapped( text, text + textSize - 1 );
+            const char* textEnd = text + textSize - 1;
+            while( text < textEnd && *text == ' ' ) { ++text; }
+            textRegion_.RenderListTextWrapped( text, textEnd, mdConfig_.bulletSpacing > 0.0f ? mdConfig_.bulletSpacing : -1.0f, bHangingIndent );
         }
         else if( line_.isHeading )          // render heading
         {
@@ -505,10 +568,13 @@ namespace ImGui
         }
         mdConfig_.formatCallback( formatInfo, false );
 
-        // unindent
-        for( int j = indentStart; j < line_.leadSpaceCount / 2; ++j )
+        // unindent in legacy mode
+        if( !bHangingIndent )
         {
-            ImGui::Unindent();
+            for( int j = indentStart; j < line_.leadSpaceCount / 2; ++j )
+            {
+                ImGui::Unindent();
+            }
         }
     }
 
@@ -567,15 +633,12 @@ namespace ImGui
                 {
                     line.isLeadingSpace = false;
                     line.lastRenderPosition = i - 1;
-                    if(( c == '*' ) && ( line.leadSpaceCount >= 2 ))
+                    if(( c == '*' || c == '-' || c == '+' ) &&
+                       ( (int)markdownLength_ > i + 1 ) && ( markdown_[ i + 1 ] == ' ' ))
                     {
-                        if( ( (int)markdownLength_ > i + 1 ) && ( markdown_[ i + 1 ] == ' ' ) )    // space after '*'
-                        {
-                            line.isUnorderedListStart = true;
-                            ++i;
-                            ++line.lastRenderPosition;
-                        }
-                        // carry on processing as could be emphasis
+                        line.isUnorderedListStart = true;
+                        ++i;
+                        ++line.lastRenderPosition;
                     }
                     else if( c == '#' )
                     {
@@ -666,11 +729,39 @@ namespace ImGui
                     em = Emphasis();
                     // render previous line content
                     line.lineEnd = link.text.start - ( link.isImage ? 2 : 1 );
-                    RenderLine( markdown_, line, textRegion, mdConfig_ );
-                    line.leadSpaceCount = 0;
+                    if( line.lineEnd > line.lineStart )
+                    {
+                        RenderLine( markdown_, line, textRegion, mdConfig_ );
+                        line.isUnorderedListStart = false;
+                        ImGui::SameLine( 0.0f, 0.0f );
+                    }
+                    else if( line.isUnorderedListStart )
+                    {
+                        if( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ListHangingIndents )
+                        {
+                            int numLeadIndents = line.leadSpaceCount / 2;
+                            textRegion.ApplyLeadIndent( numLeadIndents );
+                        }
+                        else
+                        {
+                            for( int j = 1; j < line.leadSpaceCount / 2; ++j )
+                            {
+                                ImGui::Indent();
+                            }
+                        }
+                        ImGui::Bullet();
+                        if( mdConfig_.bulletSpacing > 0.0f )
+                        {
+                            ImGui::SameLine( 0.0f, mdConfig_.bulletSpacing );
+                        }
+                        else
+                        {
+                            ImGui::SameLine();
+                        }
+                        line.isUnorderedListStart = false;
+                    }
                     link.url.stop = i;
-                    line.isUnorderedListStart = false;    // the following text shouldn't have bullets
-                    ImGui::SameLine( 0.0f, 0.0f );
+                    // Keep line.leadSpaceCount so subsequent tokens on this list line maintain alignment
                     if( link.isImage )   // it's an image, render it.
                     {
                         bool drawnImage = false;
@@ -788,7 +879,31 @@ namespace ImGui
                             RenderLine( markdown_, line, textRegion, mdConfig_ );
 						    ImGui::SameLine( 0.0f, 0.0f );
                             line.isUnorderedListStart = false;
-                            line.leadSpaceCount = 0;
+                        }
+                        else if( line.isUnorderedListStart )
+                        {
+                            if( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ListHangingIndents )
+                            {
+                                int numLeadIndents = line.leadSpaceCount / 2;
+                                textRegion.ApplyLeadIndent( numLeadIndents );
+                            }
+                            else
+                            {
+                                for( int j = 1; j < line.leadSpaceCount / 2; ++j )
+                                {
+                                    ImGui::Indent();
+                                }
+                            }
+                            ImGui::Bullet();
+                            if( mdConfig_.bulletSpacing > 0.0f )
+                            {
+                                ImGui::SameLine( 0.0f, mdConfig_.bulletSpacing );
+                            }
+                            else
+                            {
+                                ImGui::SameLine();
+                            }
+                            line.isUnorderedListStart = false;
                         }
 						line.isEmphasis = true;
 						line.lastRenderPosition = em.text.start - 1;
@@ -844,7 +959,32 @@ namespace ImGui
                 line.lineStart = i + 1;
                 line.lastRenderPosition = i;
 
-                textRegion.ResetIndent();
+                // Check whether the next line is a continuation line of the current list item
+                bool isNextContinuation = false;
+                if( ( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_ListHangingIndents ) &&
+                    ( textRegion.GetIndent() > 0.0f || textRegion.GetLeadIndents() > 0 ) && i + 1 < (int)markdownLength_ )
+                {
+                    int next = i + 1;
+                    int spaceCount = 0;
+                    while( next < (int)markdownLength_ && ( markdown_[next] == ' ' || markdown_[next] == '\t' ) )
+                    {
+                        spaceCount += ( markdown_[next] == '\t' ) ? 4 : 1;
+                        ++next;
+                    }
+                    if( spaceCount >= 2 && next < (int)markdownLength_ )
+                    {
+                        char nextC = markdown_[next];
+                        if( nextC != '*' && nextC != '-' && nextC != '+' && nextC != '#' && nextC != '\n' && nextC != '\r' )
+                        {
+                            isNextContinuation = true;
+                        }
+                    }
+                }
+
+                if( !isNextContinuation )
+                {
+                    textRegion.ResetIndent();
+                }
 
                 // reset the link
                 link = Link();
