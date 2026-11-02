@@ -27,6 +27,13 @@ imgui_markdown currently supports the following markdown functionality:
 
 *Note - the gif above is heavily compressed due to GitHub limitations*
 
+## No generative AI / LLMs
+
+Do not use generative AI / large language models (LLMs) to contribute to this project.
+
+- You must confirm that you are the author of the contribution, and that you did not use generative AI / LLMs.
+- You must contribute under the terms of the project licence.
+
 ## Syntax
 
 ### Wrapping
